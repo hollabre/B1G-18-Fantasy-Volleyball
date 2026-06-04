@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Ten Fantasy Volleyball 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04090f;--surface:#0a1628;--surface2:#0f1f3d;--border:#1e3a5f;
+  --accent:#60c8f5;--accent2:#38e8c8;--accent3:#f5604a;
+  --text:#e8f4ff;--muted:#7aaed4;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(96,200,245,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(96,200,245,0.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+
+/* HEADER */
+header{z-index:10;padding:0 2rem;border-bottom:1px solid var(--border);background:rgba(4,9,15,0.97);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;height:72px;position:sticky;top:0;}
+.logo-main{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.04em;color:var(--accent);line-height:1;}
+.logo-sub{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;}
+.header-meta{display:flex;align-items:center;gap:1.5rem;}
+.season-badge{font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--accent);border:1px solid var(--accent);padding:0.25rem 0.75rem;letter-spacing:0.1em;}
+.week-label{font-size:0.8rem;color:var(--muted);}
+
+/* TABS */
+nav.tabs{position:sticky;top:72px;z-index:9;display:flex;padding:0 2rem;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+nav.tabs button{background:none;border:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;padding:1rem 1.5rem;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.2s,border-color 0.2s;}
+nav.tabs button:hover{color:var(--text);}
+nav.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* MAIN */
+main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2.5rem 2rem 4rem;}
+.section{display:none;}
+.section.active{display:block;animation:fadeUp 0.3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* SEC HEADER */
+.sec-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:0.04em;line-height:1;}
+.sec-title span{color:var(--accent);}
+.sec-desc{font-size:0.85rem;color:var(--muted);margin-top:0.25rem;font-style:italic;}
+
+/* TEAMS */
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;}
+.team-card{background:var(--surface);border:1px solid var(--border);overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;}
+.team-card:hover{border-color:rgba(96,200,245,0.45);box-shadow:0 4px 20px rgba(96,200,245,0.06);}
+.tc-stripe{height:3px;}
+.tc-top{display:flex;}
+.tc-photo{width:110px;min-width:110px;height:110px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border);flex-shrink:0;overflow:hidden;}
+.tc-photo img{width:100%;height:100%;object-fit:cover;}
+.tc-photo-icon{font-size:1.8rem;opacity:0.25;}
+.tc-photo-label{font-family:'Space Mono',monospace;font-size:0.45rem;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;margin-top:0.25rem;text-align:center;padding:0 0.3rem;line-height:1.4;}
+.tc-info{padding:0.85rem 1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;}
+.tc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;}
+.tc-name{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.05em;line-height:1.15;}
+.tc-owner{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.1rem;}
+.tc-rank{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:rgba(96,200,245,0.12);line-height:1;flex-shrink:0;}
+.tc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:0.7rem;}
+.stat-box{background:var(--surface2);padding:0.45rem 0.3rem;text-align:center;}
+.stat-val{font-family:'Space Mono',monospace;font-size:0.9rem;font-weight:700;}
+.stat-lbl{font-size:0.52rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.09em;margin-top:0.1rem;}
+
+/* ROSTER EXPAND */
+.roster-toggle{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;background:var(--surface2);border-top:1px solid var(--border);cursor:pointer;font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);transition:color 0.2s,background 0.2s;user-select:none;}
+.roster-toggle:hover{color:var(--accent);background:rgba(96,200,245,0.05);}
+.toggle-arrow{transition:transform 0.25s;display:inline-block;}
+.roster-toggle.open .toggle-arrow{transform:rotate(180deg);}
+.roster-panel{max-height:0;overflow:hidden;transition:max-height 0.35s ease;}
+.roster-panel.open{max-height:700px;border-top:1px solid var(--border);}
+.rtable{width:100%;border-collapse:collapse;font-size:0.78rem;}
+.rtable thead tr{background:rgba(15,31,61,0.9);}
+.rtable thead th{font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0.5rem 0.75rem;text-align:left;}
+.rtable tbody tr{border-bottom:1px solid rgba(30,58,95,0.5);}
+.rtable tbody tr:last-child{border-bottom:none;}
+.rtable tbody tr:hover{background:rgba(96,200,245,0.04);}
+.rtable td{padding:0.5rem 0.75rem;}
+.rtable td.rpts{font-family:'Space Mono',monospace;color:var(--accent);font-weight:700;text-align:right;}
+.rtable td.rname{font-weight:600;}
+.rtable td.rschool{color:var(--muted);font-size:0.7rem;}
+
+/* SCORES */
+.matchups{display:flex;flex-direction:column;gap:1rem;}
+.wk-hdr{font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--accent);letter-spacing:0.15em;text-transform:uppercase;padding:0.5rem 0;border-bottom:1px solid var(--border);margin-bottom:0.75rem;margin-top:1.5rem;}
+.wk-hdr:first-child{margin-top:0;}
+.mc{background:var(--surface);border:1px solid var(--border);padding:1.25rem 1.5rem;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem;transition:border-color 0.2s;}
+.mc:hover{border-color:rgba(96,200,245,0.3);}
+.mt{display:flex;flex-direction:column;gap:0.15rem;}
+.mt.r{text-align:right;}
+.mtn{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:0.04em;}
+.mto{font-size:0.68rem;color:var(--muted);}
+.msb{display:flex;align-items:center;gap:0.75rem;justify-content:center;}
+.ms{font-family:'Space Mono',monospace;font-size:1.7rem;font-weight:700;min-width:3.2rem;text-align:center;}
+.ms.win{color:var(--accent);}
+.ms.lose{color:var(--muted);}
+.msep{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--muted);}
+.mres{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--muted);text-transform:uppercase;text-align:center;letter-spacing:0.1em;margin-top:0.2rem;}
+.live-dot{display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;margin-right:4px;animation:pulse 1.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* TABLES */
+.swrap{overflow-x:auto;}
+table.stbl{width:100%;border-collapse:collapse;font-size:0.875rem;}
+table.stbl thead tr{background:var(--surface2);border-bottom:2px solid var(--accent);}
+table.stbl thead th{font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.11em;text-transform:uppercase;color:var(--muted);padding:0.8rem 1rem;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;}
+table.stbl thead th:hover{color:var(--accent);}
+table.stbl thead th.sorted{color:var(--accent);}
+table.stbl thead th .si{margin-left:0.3rem;opacity:0.5;}
+table.stbl thead th.sorted .si{opacity:1;}
+table.stbl tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s;}
+table.stbl tbody tr:hover{background:var(--surface);}
+table.stbl tbody td{padding:0.8rem 1rem;white-space:nowrap;}
+td.rc{font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--muted);width:36px;}
+td.rc.t3{color:var(--accent);font-weight:700;}
+td.nc{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:0.04em;}
+td.oc{font-size:0.74rem;color:var(--muted);}
+td.nm{font-family:'Space Mono',monospace;text-align:right;}
+td.wc{color:var(--accent2);font-weight:600;}
+td.lc{color:var(--accent3);}
+td.pc{color:var(--accent);font-weight:700;}
+.rbar{display:flex;width:72px;height:5px;background:var(--surface2);overflow:hidden;}
+.rbar-f{background:var(--accent);height:100%;}
+
+/* PLAYERS */
+.ctrl{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;}
+.sbox{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:0.72rem;padding:0.6rem 1rem;outline:none;width:210px;}
+.sbox:focus{border-color:var(--accent);}
+.sbox::placeholder{color:var(--muted);}
+.fsel{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:0.7rem;padding:0.6rem 1rem;outline:none;cursor:pointer;}
+.fsel:focus{border-color:var(--accent);}
+.pb{display:inline-block;font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;padding:0.18rem 0.45rem;border-radius:2px;font-weight:700;}
+.pb-S{background:rgba(56,232,200,0.15);color:var(--accent2);}
+.pb-OH{background:rgba(96,200,245,0.15);color:var(--accent);}
+.pb-MB{background:rgba(245,96,74,0.12);color:var(--accent3);}
+.pb-L{background:rgba(96,200,245,0.1);color:#a8d8f5;}
+.pb-OPP{background:rgba(160,130,255,0.15);color:#b8a0ff;}
+.tu{color:var(--accent2);}
+.td2{color:var(--accent3);}
+.tf{color:var(--muted);}
+
+/* DRAFT */
+.dgwrap{overflow-x:auto;}
+.dg{border:1px solid var(--border);}
+.dhr{display:grid;background:var(--surface2);border-bottom:2px solid var(--accent);}
+.dhc{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);padding:0.6rem 0.35rem;text-align:center;border-right:1px solid var(--border);line-height:1.4;}
+.dhc:last-child{border-right:none;}
+.drr{display:grid;border-bottom:1px solid var(--border);}
+.drr:last-child{border-bottom:none;}
+.drl{font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:var(--muted);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);}
+.dp{padding:0.45rem 0.35rem;border-right:1px solid var(--border);min-height:62px;display:flex;flex-direction:column;justify-content:center;gap:0.12rem;position:relative;}
+.dp:hover{background:rgba(96,200,245,0.05);}
+.dp:last-child{border-right:none;}
+.dp.ss{background:rgba(255,255,255,0.01);}
+.dp-name{font-size:0.7rem;font-weight:600;color:var(--text);line-height:1.2;}
+.dp-school{font-size:0.56rem;color:var(--muted);}
+.dp-num{font-family:'Space Mono',monospace;font-size:0.48rem;color:rgba(96,200,245,0.2);position:absolute;top:3px;right:3px;}
+
+/* ── PLAYOFF BRACKET ── */
+.bracket-outer{overflow-x:auto;padding-bottom:1rem;}
+.bracket-layout{display:flex;gap:0;align-items:flex-start;min-width:900px;}
+.bracket-col{display:flex;flex-direction:column;flex:1;min-width:160px;}
+.bcol-label{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.13em;text-transform:uppercase;color:var(--accent);text-align:center;padding:0.55rem 0.4rem;border-bottom:1px solid var(--border);background:var(--surface2);margin-bottom:0;white-space:nowrap;}
+.bcol-games{display:flex;flex-direction:column;justify-content:space-around;padding:0.6rem 0.3rem;gap:0.5rem;flex:1;}
+.bmatch{background:var(--surface);border:1px solid var(--border);overflow:hidden;position:relative;}
+.bmatch.champ{border-color:var(--accent);box-shadow:0 0 24px rgba(96,200,245,0.18);}
+.bmatch-label{font-family:'Space Mono',monospace;font-size:0.48rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;padding:0.25rem 0.5rem;background:var(--surface2);border-bottom:1px solid var(--border);}
+.bteam{display:flex;align-items:center;padding:0.45rem 0.5rem;border-bottom:1px solid var(--border);gap:0.4rem;min-height:42px;}
+.bteam:last-child{border-bottom:none;}
+.bteam.win{background:rgba(96,200,245,0.07);}
+.bteam.out{opacity:0.35;}
+.bteam.tbd{opacity:0.25;}
+/* team logo in bracket */
+.blogo{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.8rem;overflow:hidden;}
+.blogo img{width:100%;height:100%;object-fit:cover;}
+.binfo{flex:1;min-width:0;}
+.bseed{font-family:'Space Mono',monospace;font-size:0.52rem;color:var(--muted);display:block;}
+.bname{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;}
+.bowner{font-size:0.55rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bscore{font-family:'Space Mono',monospace;font-size:0.82rem;font-weight:700;flex-shrink:0;min-width:32px;text-align:right;}
+.bscore.win{color:var(--accent);}
+.champ-banner{display:block;background:var(--accent);color:#04090f;font-family:'Bebas Neue',sans-serif;font-size:0.62rem;letter-spacing:0.12em;padding:3px 8px;text-align:center;}
+.bye-tag{font-family:'Space Mono',monospace;font-size:0.48rem;color:var(--accent2);background:rgba(56,232,200,0.1);border:1px solid rgba(56,232,200,0.25);padding:1px 4px;margin-left:0.3rem;flex-shrink:0;}
+/* Connector lines between bracket rounds */
+.bcol-connector{width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-top:2.2rem;}
+.bcol-connector svg{width:20px;}
+
+/* SECTION DIVIDER */
+.pdivider{font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--accent);letter-spacing:0.15em;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:0.5rem;margin:2rem 0 1.25rem;}
+.pdivider:first-child{margin-top:0;}
+
+@media(max-width:700px){
+  .sec-title{font-size:2rem;}
+  .mc{grid-template-columns:1fr;}
+  .mt.r{text-align:left;}
+  .teams-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo-main">B1G FANTASY VB</div>
+    <div class="logo-sub">Big Ten Conference Fantasy League</div>
+  </div>
+  <div class="header-meta">
+    <span class="week-label">2026 Season</span>
+    <span class="season-badge">Week 1</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="active" onclick="showTab('teams',this)">Teams</button>
+  <button onclick="showTab('scores',this)">Scores</button>
+  <button onclick="showTab('standings',this)">Standings</button>
+  <button onclick="showTab('players',this)">Players</button>
+  <button onclick="showTab('draft',this)">Draft Board</button>
+  <button onclick="showTab('playoffs',this)">Playoffs</button>
+</nav>
+
+<main>
+  <section id="teams"     class="section active"></section>
+  <section id="scores"    class="section"></section>
+  <section id="standings" class="section"></section>
+  <section id="players"   class="section"></section>
+  <section id="draft"     class="section"></section>
+  <section id="playoffs"  class="section"></section>
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  LEAGUE DATA  —  update this section each week
+// ═══════════════════════════════════════════════════
+
+const TEAMS = [
+  // photo: null  →  placeholder shown
+  // photo: 'https://...'  →  your image URL
+  { id:1,  name:'Serves You Right',                   owner:'Abbi Benge',       color:'#e879a0', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:2,  name:'Kev',                                owner:'Kevin Cline',      color:'#60c8f5', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:3,  name:'Chat B1G',                           owner:'Kaitlyn Dawson',   color:'#38e8c8', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:4,  name:'Dinks, Dumps & Dimes',               owner:'Danny Douglas',    color:'#f59e0b', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:5,  name:'B1G Ballers',                        owner:'Emily Ehman',      color:'#818cf8', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:6,  name:"Sheffield's Terrace Trolls",         owner:'Glenn Halasz',     color:'#fb7185', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:7,  name:'Both Sides of the Chicoine (RIP)',   owner:'Brendan Holland',  color:'#34d399', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:8,  name:'bulgarianqueenvbprincess',            owner:'Elena Kovatcheva', color:'#a78bfa', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:9,  name:'Trader Cons',                        owner:'Connor Onion',     color:'#f5604a', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+  { id:10, name:'The Exterminators',                  owner:'Alex Struckman',   color:'#0ea5e9', wins:0,losses:0,pf:0,pa:0,streak:0, photo:null },
+];
+
+// 10 players per team — update stats each week
+const PLAYERS = [
+  // ── Team 1: Serves You Right ──
+  { name:'Player 1A', school:'Wisconsin',    pos:'OH',  ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1B', school:'Nebraska',     pos:'S',   ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1C', school:'Penn State',   pos:'MB',  ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1D', school:'Michigan',     pos:'L',   ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1E', school:'Ohio State',   pos:'OPP', ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1F', school:'Iowa',         pos:'OH',  ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1G', school:'Purdue',       pos:'MB',  ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1H', school:'Minnesota',    pos:'S',   ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1I', school:'Michigan St',  pos:'L',   ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 1J', school:'Indiana',      pos:'OPP', ft:1, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 2: Kev ──
+  { name:'Player 2A', school:'Nebraska',     pos:'OH',  ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2B', school:'Wisconsin',    pos:'S',   ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2C', school:'Iowa',         pos:'MB',  ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2D', school:'Michigan',     pos:'L',   ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2E', school:'Penn State',   pos:'OPP', ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2F', school:'Ohio State',   pos:'OH',  ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2G', school:'Purdue',       pos:'MB',  ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2H', school:'Minnesota',    pos:'S',   ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2I', school:'Rutgers',      pos:'L',   ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 2J', school:'Indiana',      pos:'OPP', ft:2, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 3: Chat B1G ──
+  { name:'Player 3A', school:'Michigan St',  pos:'OH',  ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3B', school:'Penn State',   pos:'OPP', ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3C', school:'Wisconsin',    pos:'MB',  ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3D', school:'Iowa',         pos:'L',   ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3E', school:'Nebraska',     pos:'S',   ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3F', school:'Purdue',       pos:'OH',  ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3G', school:'Michigan',     pos:'MB',  ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3H', school:'Ohio State',   pos:'S',   ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3I', school:'Minnesota',    pos:'L',   ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 3J', school:'Northwestern', pos:'OPP', ft:3, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 4: Dinks, Dumps & Dimes ──
+  { name:'Player 4A', school:'Michigan',     pos:'MB',  ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4B', school:'Ohio State',   pos:'S',   ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4C', school:'Nebraska',     pos:'OPP', ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4D', school:'Penn State',   pos:'L',   ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4E', school:'Wisconsin',    pos:'MB',  ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4F', school:'Purdue',       pos:'S',   ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4G', school:'Iowa',         pos:'OPP', ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4H', school:'Michigan St',  pos:'OH',  ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4I', school:'Minnesota',    pos:'L',   ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 4J', school:'Indiana',      pos:'OH',  ft:4, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 5: B1G Ballers ──
+  { name:'Player 5A', school:'Purdue',       pos:'OH',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5B', school:'Penn State',   pos:'OH',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5C', school:'Northwestern', pos:'OH',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5D', school:'Minnesota',    pos:'MB',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5E', school:'Michigan',     pos:'OH',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5F', school:'Indiana',      pos:'L',   ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5G', school:'Ohio State',   pos:'MB',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5H', school:'Nebraska',     pos:'OH',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5I', school:'Illinois',     pos:'L',   ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 5J', school:'Wisconsin',    pos:'MB',  ft:5, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 6: Sheffield's Terrace Trolls ──
+  { name:'Player 6A', school:'Minnesota',    pos:'OH',  ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6B', school:'Rutgers',      pos:'MB',  ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6C', school:'Wisconsin',    pos:'L',   ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6D', school:'Michigan St',  pos:'OH',  ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6E', school:'Penn State',   pos:'OPP', ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6F', school:'Purdue',       pos:'MB',  ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6G', school:'Ohio State',   pos:'S',   ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6H', school:'Iowa',         pos:'L',   ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6I', school:'Nebraska',     pos:'OH',  ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 6J', school:'Michigan',     pos:'S',   ft:6, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 7: Both Sides of the Chicoine (RIP) ──
+  { name:'Player 7A', school:'Penn State',   pos:'MB',  ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7B', school:'Indiana',      pos:'OPP', ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7C', school:'Wisconsin',    pos:'MB',  ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7D', school:'Rutgers',      pos:'L',   ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7E', school:'Michigan',     pos:'S',   ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7F', school:'Minnesota',    pos:'OPP', ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7G', school:'Indiana',      pos:'OH',  ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7H', school:'Rutgers',      pos:'S',   ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7I', school:'Illinois',     pos:'OPP', ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 7J', school:'Northwestern', pos:'S',   ft:7, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 8: bulgarianqueenvbprincess ──
+  { name:'Player 8A', school:'Illinois',     pos:'OH',  ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8B', school:'Purdue',       pos:'S',   ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8C', school:'Ohio State',   pos:'OH',  ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8D', school:'Illinois',     pos:'MB',  ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8E', school:'Indiana',      pos:'OPP', ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8F', school:'Iowa',         pos:'OPP', ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8G', school:'Wisconsin',    pos:'OH',  ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8H', school:'Michigan St',  pos:'L',   ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8I', school:'Iowa',         pos:'MB',  ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 8J', school:'Northwestern', pos:'S',   ft:8, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 9: Trader Cons ──
+  { name:'Player 9A', school:'Wisconsin',    pos:'OH',  ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9B', school:'Nebraska',     pos:'OH',  ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9C', school:'Michigan',     pos:'S',   ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9D', school:'Michigan',     pos:'MB',  ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9E', school:'Iowa',         pos:'L',   ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9F', school:'Indiana',      pos:'L',   ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9G', school:'Minnesota',    pos:'MB',  ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9H', school:'Purdue',       pos:'OPP', ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9I', school:'Minnesota',    pos:'OPP', ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 9J', school:'Northwestern', pos:'L',   ft:9, fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Team 10: The Exterminators ──
+  { name:'Player 10A',school:'Indiana',      pos:'OPP', ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10B',school:'Michigan St',  pos:'MB',  ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10C',school:'Minnesota',    pos:'OH',  ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10D',school:'Penn State',   pos:'OPP', ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10E',school:'Rutgers',      pos:'L',   ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10F',school:'Iowa',         pos:'MB',  ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10G',school:'Iowa',         pos:'MB',  ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10H',school:'Northwestern', pos:'OH',  ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10I',school:'Illinois',     pos:'S',   ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  { name:'Player 10J',school:'Northwestern', pos:'S',   ft:10,fa:false, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+  // ── Free Agents — set fa:true for any unrostered player ──
+  // Add free agent players here with ft:0 and fa:true
+  // Example:
+  // { name:'Jane Smith', school:'Nebraska', pos:'OH', ft:0, fa:true, pts:0,kills:0,aces:0,blocks:0,digs:0,assists:0,trend:0 },
+];
+
+// Add completed weeks above this one as the season progresses.
+// Set final:true and fill in scores once a week is done.
+const MATCHUPS = [
+  { week:'Week 1 (Current)', games:[
+    { home:1, away:6,  homeScore:0, awayScore:0, final:false },
+    { home:2, away:7,  homeScore:0, awayScore:0, final:false },
+    { home:3, away:8,  homeScore:0, awayScore:0, final:false },
+    { home:4, away:9,  homeScore:0, awayScore:0, final:false },
+    { home:5, away:10, homeScore:0, awayScore:0, final:false },
+  ]},
+];
+
+// Draft picks — 10 rounds x 10 teams snake draft
+// Replace with your actual draft picks
+const DRAFT_PICKS = [
+  {r:1,s:1, t:1, name:'Pick 1.01',  school:'—', pos:'OH'},
+  {r:1,s:2, t:2, name:'Pick 1.02',  school:'—', pos:'OH'},
+  {r:1,s:3, t:3, name:'Pick 1.03',  school:'—', pos:'MB'},
+  {r:1,s:4, t:4, name:'Pick 1.04',  school:'—', pos:'S'},
+  {r:1,s:5, t:5, name:'Pick 1.05',  school:'—', pos:'OPP'},
+  {r:1,s:6, t:6, name:'Pick 1.06',  school:'—', pos:'OH'},
+  {r:1,s:7, t:7, name:'Pick 1.07',  school:'—', pos:'MB'},
+  {r:1,s:8, t:8, name:'Pick 1.08',  school:'—', pos:'OH'},
+  {r:1,s:9, t:9, name:'Pick 1.09',  school:'—', pos:'OPP'},
+  {r:1,s:10,t:10,name:'Pick 1.10',  school:'—', pos:'L'},
+];
+
+// PLAYOFF BRACKET
+// Week 10: Play-in — 7v10 and 8v9
+// Week 11: Quarterfinals — all 8 teams
+//   Seed 1 vs winner of 8v9 play-in
+//   Seed 2 vs winner of 7v10 play-in
+//   Seed 3 vs Seed 6
+//   Seed 4 vs Seed 5
+// Week 12: Semifinals, Week 13: Championship
+// To update: fill in score values and set winner to the winning seed number.
+const PLAYOFF = {
+  // Week 10 — Play-In Games
+  playin: [
+    { label:'Play-In · Seed 7 vs 10', teamA:{seed:7,  tid:7,  score:0}, teamB:{seed:10, tid:10, score:0}, winner:null },
+    { label:'Play-In · Seed 8 vs 9',  teamA:{seed:8,  tid:8,  score:0}, teamB:{seed:9,  tid:9,  score:0}, winner:null },
+  ],
+  // Week 11 — Quarterfinals (all 6 seeds + 2 play-in winners)
+  qf: [
+    { label:'QF · Seed 1 vs W(8-9)',  teamA:{seed:1, tid:1, score:0}, teamB:null, winner:null },
+    { label:'QF · Seed 2 vs W(7-10)', teamA:{seed:2, tid:2, score:0}, teamB:null, winner:null },
+    { label:'QF · Seed 3 vs 6',       teamA:{seed:3, tid:3, score:0}, teamB:{seed:6, tid:6, score:0}, winner:null },
+    { label:'QF · Seed 4 vs 5',       teamA:{seed:4, tid:4, score:0}, teamB:{seed:5, tid:5, score:0}, winner:null },
+  ],
+  // Week 12 — Semifinals
+  sf: [
+    { label:'SF 1', teamA:null, teamB:null, winner:null },
+    { label:'SF 2', teamA:null, teamB:null, winner:null },
+  ],
+  // Week 13 — Championship
+  final: { teamA:null, teamB:null, winner:null },
+};
+
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
+const gt  = id => TEAMS.find(t => t.id === id);
+const SH  = '<span class="si">';
+const SE  = '</span>';
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleRoster(tid) {
+  const panel  = document.getElementById('rp' + tid);
+  const toggle = document.getElementById('rt' + tid);
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  toggle.classList.toggle('open', !isOpen);
+}
+
+function pb(pos) { return '<span class="pb pb-' + pos + '">' + pos + '</span>'; }
+function trendIcon(t) { return t > 0 ? '<span class="tu">&#9650;</span>' : t < 0 ? '<span class="td2">&#9660;</span>' : '<span class="tf">&mdash;</span>'; }
+function strkStr(s) { return s === 0 ? '&mdash;' : (s > 0 ? 'W' : 'L') + Math.abs(s); }
+function strkCol(s) { return s > 0 ? 'var(--accent2)' : s < 0 ? 'var(--accent3)' : 'var(--muted)'; }
+function pct(w, l) { return (w + l) === 0 ? '&mdash;' : (w / (w + l) * 100).toFixed(1) + '%'; }
+function fillPct(w, l) { return (w + l) === 0 ? 0 : (w / (w + l) * 100).toFixed(0); }
+
+// Team initials for bracket logo placeholder
+function initials(name) {
+  return name.replace(/[()]/g,'').split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  TEAMS
+// ═══════════════════════════════════════════════════
+function renderTeams() {
+  const sorted = [...TEAMS].sort((a,b) => b.wins - a.wins || (b.pf - b.pa) - (a.pf - a.pa));
+  let html = '<div class="sec-header"><div><div class="sec-title">THE <span>TEAMS</span></div>'
+           + '<div class="sec-desc">10 teams &middot; 2026 Season &middot; Click "View Roster" to expand</div></div></div>'
+           + '<div class="teams-grid">';
+
+  sorted.forEach((t, i) => {
+    const roster = PLAYERS.filter(p => p.ft === t.id).sort((a,b) => b.pts - a.pts);
+    const diff   = t.pf - t.pa;
+    const photo  = t.photo
+      ? '<img src="' + t.photo + '" alt="' + t.name + '">'
+      : '<div class="tc-photo-icon">&#128248;</div><div class="tc-photo-label">Add Team Photo</div>';
+    const rows = roster.map(p =>
+      '<tr><td class="rname">' + p.name + '</td><td class="rschool">' + p.school + '</td>'
+      + '<td>' + pb(p.pos) + '</td><td class="rpts">' + p.pts.toFixed(1) + '</td></tr>'
+    ).join('');
+
+    html += '<div class="team-card">'
+          + '<div class="tc-stripe" style="background:' + t.color + '"></div>'
+          + '<div class="tc-top">'
+          +   '<div class="tc-photo">' + photo + '</div>'
+          +   '<div class="tc-info">'
+          +     '<div class="tc-header">'
+          +       '<div><div class="tc-name">' + t.name + '</div><div class="tc-owner">' + t.owner + '</div></div>'
+          +       '<div class="tc-rank">' + (i + 1) + '</div>'
+          +     '</div>'
+          +     '<div class="tc-stats">'
+          +       '<div class="stat-box"><div class="stat-val">' + t.wins + '-' + t.losses + '</div><div class="stat-lbl">Record</div></div>'
+          +       '<div class="stat-box"><div class="stat-val">' + t.pf.toFixed(0) + '</div><div class="stat-lbl">Pts For</div></div>'
+          +       '<div class="stat-box"><div class="stat-val">' + pct(t.wins, t.losses) + '</div><div class="stat-lbl">Win %</div></div>'
+          +       '<div class="stat-box"><div class="stat-val">' + (diff >= 0 ? '+' : '') + diff.toFixed(0) + '</div><div class="stat-lbl">Diff</div></div>'
+          +       '<div class="stat-box"><div class="stat-val">' + roster.length + '</div><div class="stat-lbl">Roster</div></div>'
+          +       '<div class="stat-box"><div class="stat-val" style="color:' + strkCol(t.streak) + '">' + strkStr(t.streak) + '</div><div class="stat-lbl">Streak</div></div>'
+          +     '</div>'
+          +   '</div>'
+          + '</div>'
+          + '<div class="roster-toggle" id="rt' + t.id + '" onclick="toggleRoster(' + t.id + ')">'
+          +   '<span>View Roster (' + roster.length + ' players)</span>'
+          +   '<span class="toggle-arrow">&#9660;</span>'
+          + '</div>'
+          + '<div class="roster-panel" id="rp' + t.id + '">'
+          +   '<table class="rtable"><thead><tr><th>Player</th><th>School</th><th>Pos</th><th style="text-align:right">FPTS</th></tr></thead>'
+          +   '<tbody>' + rows + '</tbody></table>'
+          + '</div>'
+          + '</div>';
+  });
+
+  html += '</div>';
+  document.getElementById('teams').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  SCORES
+// ═══════════════════════════════════════════════════
+function renderScores() {
+  let html = '<div class="sec-header"><div><div class="sec-title">MATCH<span>UPS</span></div>'
+           + '<div class="sec-desc">2026 Season &middot; 9-week regular season</div></div></div>'
+           + '<div class="matchups">';
+
+  MATCHUPS.forEach(week => {
+    html += '<div class="wk-hdr">' + week.week + '</div>';
+    week.games.forEach(g => {
+      const home = gt(g.home), away = gt(g.away);
+      const hw   = g.homeScore > g.awayScore;
+      html += '<div class="mc">'
+            + '<div class="mt"><div class="mtn">' + home.name + '</div><div class="mto">' + home.owner + '</div></div>'
+            + '<div><div class="msb">'
+            +   '<div class="ms ' + (hw ? 'win' : 'lose') + '">' + g.homeScore.toFixed(1) + '</div>'
+            +   '<div class="msep">&ndash;</div>'
+            +   '<div class="ms ' + (!hw ? 'win' : 'lose') + '">' + g.awayScore.toFixed(1) + '</div>'
+            + '</div></div>'
+            + '<div class="mt r"><div class="mtn">' + away.name + '</div><div class="mto">' + away.owner + '</div></div>'
+            + '</div>';
+    });
+  });
+
+  html += '</div>';
+  document.getElementById('scores').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  STANDINGS
+// ═══════════════════════════════════════════════════
+let stSort = { col:'rank', dir:1 };
+
+function renderStandings() {
+  const data = [...TEAMS].map(t => ({...t, diff: t.pf - t.pa})).sort((a, b) => {
+    const { col, dir } = stSort;
+    if (col === 'rank')   return dir * (b.wins - a.wins || (b.pf - b.pa) - (a.pf - a.pa));
+    if (col === 'team')   return dir * a.name.localeCompare(b.name);
+    if (col === 'owner')  return dir * a.owner.localeCompare(b.owner);
+    if (col === 'streak') return dir * (a.streak - b.streak);
+    return dir * (a[col] - b[col]);
+  });
+
+  const th = (col, lbl) => {
+    const act  = stSort.col === col ? ' sorted' : '';
+    const icon = stSort.col === col ? (stSort.dir === 1 ? '&#8595;' : '&#8593;') : '&#8597;';
+    return '<th class="' + act + '" onclick="sortSt(\'' + col + '\')">' + lbl + SH + icon + SE + '</th>';
+  };
+
+  let html = '<div class="sec-header"><div><div class="sec-title">STAND<span>INGS</span></div>'
+           + '<div class="sec-desc">Click any column to sort &middot; All 10 teams make playoffs</div></div></div>'
+           + '<div class="swrap"><table class="stbl"><thead><tr>'
+           + th('rank','#') + th('team','Team') + th('owner','Manager')
+           + th('wins','W') + th('losses','L') + th('pf','PF') + th('pa','PA') + th('diff','DIFF')
+           + '<th>WIN%</th>' + th('streak','STREAK') + '<th>SEED</th>'
+           + '</tr></thead><tbody>';
+
+  data.forEach((t, i) => {
+    const seed  = i + 1;
+    const bye   = seed <= 2 ? ' <span style="font-size:0.6rem;color:var(--accent2)">(BYE)</span>' : '';
+    html += '<tr>'
+          + '<td class="rc' + (i < 3 ? ' t3' : '') + '">' + seed + '</td>'
+          + '<td class="nc">' + t.name + '</td>'
+          + '<td class="oc">' + t.owner + '</td>'
+          + '<td class="nm wc">' + t.wins + '</td>'
+          + '<td class="nm lc">' + t.losses + '</td>'
+          + '<td class="nm pc">' + t.pf.toFixed(1) + '</td>'
+          + '<td class="nm">' + t.pa.toFixed(1) + '</td>'
+          + '<td class="nm" style="color:' + (t.diff >= 0 ? 'var(--accent2)' : 'var(--accent3)') + '">' + (t.diff >= 0 ? '+' : '') + t.diff.toFixed(1) + '</td>'
+          + '<td class="nm"><div style="display:flex;align-items:center;gap:0.5rem;justify-content:flex-end"><div class="rbar"><div class="rbar-f" style="width:' + fillPct(t.wins, t.losses) + '%"></div></div>' + pct(t.wins, t.losses) + '</div></td>'
+          + '<td class="nm" style="color:' + strkCol(t.streak) + '">' + strkStr(t.streak) + '</td>'
+          + '<td class="nm" style="color:var(--accent)">#' + seed + bye + '</td>'
+          + '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  document.getElementById('standings').innerHTML = html;
+}
+
+function sortSt(col) {
+  stSort.dir = stSort.col === col ? stSort.dir * -1 : (['rank','wins','pf'].includes(col) ? -1 : 1);
+  stSort.col = col;
+  renderStandings();
+}
+
+// ═══════════════════════════════════════════════════
+//  PLAYERS
+// ═══════════════════════════════════════════════════
+let plSort = { col:'pts', dir:-1 };
+let plFilters = { search:'', pos:'', team:'' };
+
+function renderPlayers() {
+  const { search, pos, team } = plFilters;
+  let data = PLAYERS.filter(p => {
+    if (search && !p.name.toLowerCase().includes(search) && !p.school.toLowerCase().includes(search)) return false;
+    if (pos  && p.pos !== pos)   return false;
+    if (team && p.ft  !== +team) return false;
+    return true;
+  }).sort((a, b) => {
+    const { col, dir } = plSort;
+    if (col === 'name')   return dir * a.name.localeCompare(b.name);
+    if (col === 'school') return dir * a.school.localeCompare(b.school);
+    if (col === 'pos')    return dir * a.pos.localeCompare(b.pos);
+    if (col === 'team')   return dir * gt(a.ft).name.localeCompare(gt(b.ft).name);
+    return dir * (a[col] - b[col]);
+  });
+
+  const th = (col, lbl) => {
+    const act  = plSort.col === col ? ' sorted' : '';
+    const icon = plSort.col === col ? (plSort.dir === 1 ? '&#8595;' : '&#8593;') : '&#8597;';
+    return '<th class="' + act + '" onclick="sortPl(\'' + col + '\')">' + lbl + SH + icon + SE + '</th>';
+  };
+
+  const teamOpts = TEAMS.map(t => '<option value="' + t.id + '"' + (plFilters.team == t.id ? ' selected' : '') + '>' + t.name + '</option>').join('');
+  const posOpts  = ['S','OH','MB','L','OPP'].map(p => '<option value="' + p + '"' + (plFilters.pos === p ? ' selected' : '') + '>' + p + '</option>').join('');
+
+  let html = '<div class="sec-header"><div><div class="sec-title">ALL <span>PLAYERS</span></div>'
+           + '<div class="sec-desc">100 players &middot; Click any column to sort</div></div></div>'
+           + '<div class="ctrl">'
+           + '<input class="sbox" type="text" placeholder="Search player or school&hellip;" value="' + search + '" oninput="plFilters.search=this.value.toLowerCase();renderPlayers()">'
+           + '<select class="fsel" onchange="plFilters.pos=this.value;renderPlayers()"><option value="">All Positions</option>' + posOpts + '</select>'
+           + '<select class="fsel" onchange="plFilters.team=this.value;renderPlayers()"><option value="">All Teams</option>' + teamOpts + '</select>'
+           + '</div>'
+           + '<div class="swrap"><table class="stbl"><thead><tr>'
+           + '<th>#</th>'
+           + th('name','Player') + th('school','School') + th('pos','Pos') + th('team','Fantasy Team')
+           + th('pts','FPTS') + th('kills','Kills') + th('aces','Aces') + th('blocks','Blocks') + th('digs','Digs') + th('assists','Assists')
+           + '<th>Trend</th>'
+           + '</tr></thead><tbody>';
+
+  data.forEach((p, i) => {
+    html += '<tr>'
+          + '<td class="rc">' + (i + 1) + '</td>'
+          + '<td class="nc">' + p.name + '</td>'
+          + '<td class="oc">' + p.school + '</td>'
+          + '<td>' + pb(p.pos) + '</td>'
+          + '<td class="oc">' + gt(p.ft).name + '</td>'
+          + '<td class="nm pc">' + p.pts.toFixed(1) + '</td>'
+          + '<td class="nm">' + p.kills + '</td>'
+          + '<td class="nm">' + p.aces + '</td>'
+          + '<td class="nm">' + p.blocks + '</td>'
+          + '<td class="nm">' + p.digs + '</td>'
+          + '<td class="nm">' + p.assists + '</td>'
+          + '<td class="nm">' + trendIcon(p.trend) + '</td>'
+          + '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  document.getElementById('players').innerHTML = html;
+}
+
+function sortPl(col) {
+  plSort.dir = plSort.col === col ? plSort.dir * -1 : (['pts','kills','aces','blocks','digs','assists'].includes(col) ? -1 : 1);
+  plSort.col = col;
+  renderPlayers();
+}
+
+// ═══════════════════════════════════════════════════
+//  DRAFT BOARD
+// ═══════════════════════════════════════════════════
+let draftFilters = { pos:'', team:'' };
+
+function renderDraft() {
+  const { pos, team } = draftFilters;
+  const ROUNDS = 10, SLOTS = 10;
+  const order  = [1,2,3,4,5,6,7,8,9,10];
+  const colW   = '50px ' + order.map(() => '1fr').join(' ');
+  const teamOpts = TEAMS.map(t => '<option value="' + t.id + '"' + (draftFilters.team == t.id ? ' selected' : '') + '>' + t.name + '</option>').join('');
+  const posOpts  = ['S','OH','MB','L','OPP'].map(p => '<option value="' + p + '"' + (draftFilters.pos === p ? ' selected' : '') + '>' + p + '</option>').join('');
+
+  let html = '<div class="sec-header"><div><div class="sec-title">DRAFT <span>BOARD</span></div>'
+           + '<div class="sec-desc">Snake draft &middot; 10 rounds &middot; 10 teams &middot; Pre-season 2026</div></div></div>'
+           + '<div class="ctrl">'
+           + '<select class="fsel" onchange="draftFilters.pos=this.value;renderDraft()"><option value="">All Positions</option>' + posOpts + '</select>'
+           + '<select class="fsel" onchange="draftFilters.team=this.value;renderDraft()"><option value="">All Teams</option>' + teamOpts + '</select>'
+           + '</div><div class="dgwrap"><div class="dg">'
+           + '<div class="dhr" style="grid-template-columns:' + colW + '">'
+           + '<div class="dhc">RD</div>'
+           + order.map(tid => {
+               const t = gt(tid);
+               return '<div class="dhc" style="border-top:3px solid ' + t.color + '">'
+                    + t.name.split(' ')[0]
+                    + '<br><span style="font-size:0.48rem;color:var(--muted)">' + t.owner.split(' ')[0] + '</span></div>';
+             }).join('')
+           + '</div>';
+
+  for (let r = 1; r <= ROUNDS; r++) {
+    const snake = r % 2 === 0;
+    html += '<div class="drr" style="grid-template-columns:' + colW + '">'
+          + '<div class="drl">' + r + '</div>';
+    for (let s = 1; s <= SLOTS; s++) {
+      const ms   = snake ? SLOTS - s + 1 : s;
+      const tid  = order[ms - 1];
+      const pick = DRAFT_PICKS.find(p => p.r === r && p.t === tid);
+      const pnum = (r - 1) * SLOTS + (snake ? SLOTS - s + 1 : s);
+      const dimmed = (pos && pick && pick.pos !== pos) || (team && tid !== +team);
+      html += '<div class="dp' + (snake ? ' ss' : '') + '" style="' + (dimmed ? 'opacity:0.1;' : '') + '">'
+            + '<div class="dp-num">#' + pnum + '</div>'
+            + (pick
+                ? '<div class="dp-name">' + pick.name + '</div>'
+                  + '<div class="dp-school">' + pick.school + '</div>'
+                  + '<div style="margin-top:2px">' + pb(pick.pos) + '</div>'
+                : '<div class="dp-school" style="color:var(--muted)">—</div>')
+            + '</div>';
+    }
+    html += '</div>';
+  }
+
+  html += '</div></div></div>';
+  document.getElementById('draft').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  PLAYOFF BRACKET
+// ═══════════════════════════════════════════════════
+function logoHtml(t) {
+  if (!t) return '<div class="blogo">?</div>';
+  if (t.photo) return '<div class="blogo"><img src="' + t.photo + '" alt="logo"></div>';
+  // colored circle with initials
+  return '<div class="blogo" style="background:' + t.color + '22;border-color:' + t.color + '44;color:' + t.color + ';font-family:Bebas Neue,sans-serif;font-size:0.7rem;letter-spacing:0.04em">'
+       + initials(t.name) + '</div>';
+}
+
+function bteamHtml(entry, winner) {
+  if (!entry) {
+    return '<div class="bteam tbd">'
+         + '<div class="blogo" style="opacity:0.2">?</div>'
+         + '<div class="binfo"><span class="bseed">TBD</span><span class="bname">TBD</span></div>'
+         + '<span class="bscore">&mdash;</span></div>';
+  }
+  const t   = gt(entry.tid);
+  const isW = winner !== null && winner === entry.seed;
+  const cls = winner === null ? '' : (isW ? ' win' : ' out');
+  return '<div class="bteam' + cls + '">'
+       + logoHtml(t)
+       + '<div class="binfo">'
+       +   '<span class="bseed">Seed ' + entry.seed + '</span>'
+       +   '<span class="bname">' + (t ? t.name : 'TBD') + '</span>'
+       +   '<span class="bowner">' + (t ? t.owner : '') + '</span>'
+       + '</div>'
+       + (entry.bye ? '<span class="bye-tag">BYE</span>' : '')
+       + '<span class="bscore' + (isW ? ' win' : '') + '">' + (entry.score > 0 ? entry.score.toFixed(1) : '&mdash;') + '</span>'
+       + '</div>';
+}
+
+function matchHtml(m, isChamp) {
+  const cls = isChamp && m.winner ? ' champ' : '';
+  const lbl = m.label ? '<div class="bmatch-label">' + m.label + '</div>' : '';
+  const chBanner = isChamp && m.winner ? '<div class="champ-banner">&#127942;&nbsp; 2026 CHAMPION</div>' : '';
+  return '<div class="bmatch' + cls + '">'
+       + chBanner + lbl
+       + bteamHtml(m.teamA, m.winner)
+       + bteamHtml(m.teamB, m.winner)
+       + '</div>';
+}
+
+function renderPlayoffs() {
+  let html = '<div class="sec-header"><div><div class="sec-title">PLAYOFF <span>BRACKET</span></div>'
+           + '<div class="sec-desc">All 10 teams qualify &middot; Seeds 7&ndash;10 play in (Wk 10) &middot; Seeds 1&ndash;6 + winners in QF (Wk 11) &middot; Champion crowned Wk 13</div></div></div>';
+
+  // ── Play-In ──
+  html += '<div class="pdivider">Play-In Games &mdash; Week 10 &mdash; Seed 7 vs 10 &amp; Seed 8 vs 9</div>'
+        + '<div class="bracket-outer"><div class="bracket-layout">'
+        + '<div class="bracket-col"><div class="bcol-label">Play-In (Wk 10)</div><div class="bcol-games">'
+        + PLAYOFF.playin.map(m => matchHtml(m, false)).join('')
+        + '</div></div></div></div>';
+
+  // ── Quarterfinals ──
+  html += '<div class="pdivider">Quarterfinals &mdash; Week 11 &mdash; Seeds 1&ndash;6 + Play-In Winners</div>'
+        + '<div class="bracket-outer"><div class="bracket-layout">'
+        + '<div class="bracket-col"><div class="bcol-label">Quarterfinals (Wk 11)</div><div class="bcol-games">'
+        + PLAYOFF.qf.map(m => matchHtml(m, false)).join('')
+        + '</div></div></div></div>';
+
+  // ── Semifinals ──
+  html += '<div class="pdivider">Semifinals &mdash; Week 12</div>'
+        + '<div class="bracket-outer"><div class="bracket-layout">'
+        + '<div class="bracket-col"><div class="bcol-label">Semifinals (Wk 12)</div><div class="bcol-games">'
+        + PLAYOFF.sf.map(m => matchHtml(m, false)).join('')
+        + '</div></div></div></div>';
+
+  // ── Championship ──
+  const fin = PLAYOFF.final;
+  html += '<div class="pdivider">Championship &mdash; Week 13</div>'
+        + '<div class="bracket-outer"><div class="bracket-layout">'
+        + '<div class="bracket-col" style="max-width:320px"><div class="bcol-label">Championship</div><div class="bcol-games">'
+        + matchHtml({...fin, label:''}, true)
+        + '</div></div></div></div>';
+
+  document.getElementById('playoffs').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+renderTeams();
+renderScores();
+renderStandings();
+renderPlayers();
+renderDraft();
+renderPlayoffs();
+</script>
+</body>
+</html>
