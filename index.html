@@ -560,7 +560,7 @@ function buildMatchups(rows, lineupRows) {
   return Object.values(weeks).sort((a, b) => {
     const na = parseInt(a.week.replace(/\D/g,'')) || 0;
     const nb = parseInt(b.week.replace(/\D/g,'')) || 0;
-    return na - nb;
+    return nb - na;
   });
 }
 
