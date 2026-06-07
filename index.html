@@ -124,7 +124,6 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1.5rem 2
 table.stbl{width:100%;border-collapse:collapse;font-size:0.875rem;}
 table.stbl thead tr{background:linear-gradient(90deg,var(--surface2),rgba(13,21,32,0.8));border-bottom:2px solid var(--accent);}
 table.stbl thead th{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.13em;text-transform:uppercase;color:var(--muted);padding:0.9rem 1rem;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.15s;}
-table.stbl thead th.num-header{text-align:right;}
 table.stbl thead th:hover{color:var(--accent);}
 table.stbl thead th.sorted{color:var(--accent);}
 table.stbl thead th .si{margin-left:0.3rem;opacity:0.4;}
@@ -841,8 +840,9 @@ function renderStandings() {
   const th=(col,lbl)=>{
     const act=stSort.col===col?' sorted':'';
     const icon=stSort.col===col?(stSort.dir===1?'&#8595;':'&#8593;'):'&#8597;';
-    const numCls=NUMERIC_COLS.includes(col)?' num-header':'';
-    return '<th class="'+act+numCls+'" data-sort="'+col+'" onclick="sortSt(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
+    const isNum=NUMERIC_COLS.includes(col);
+    const style=isNum?' style="text-align:right"':'';
+    return '<th class="'+act+'" data-sort="'+col+'" onclick="sortSt(this.dataset.sort)"'+style+'>'+lbl+SH+icon+SE+'</th>';
   };
   let html='<div class="sec-header"><div><div class="sec-title">STAND<span>INGS</span></div>'
     +'<div class="sec-desc">Click any column to sort &middot; Top 8 teams advance to playoffs</div></div></div>'
@@ -914,12 +914,13 @@ function renderPlayers() {
     return dir*(a[col]-b[col]);
   });
 
-  const PL_NUMERIC = ['pts','ptsPerSet','lastWk'];
+  const PL_NUMERIC = ['pts','ptsPerSet','lastWk','kills','aces','blocks','digs','assists'];
   const th=(col,lbl)=>{
     const act=plSort.col===col?' sorted':'';
     const icon=plSort.col===col?(plSort.dir===1?'&#8595;':'&#8593;'):'&#8597;';
-    const numCls=PL_NUMERIC.includes(col)?' num-header':'';
-    return '<th class="'+act+numCls+'" data-sort="'+col+'" onclick="sortPl(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
+    const isNum=PL_NUMERIC.includes(col);
+    const style=isNum?' style="text-align:right"':'';
+    return '<th class="'+act+'" data-sort="'+col+'" onclick="sortPl(this.dataset.sort)"'+style+'>'+lbl+SH+icon+SE+'</th>';
   };
 
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(plFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
