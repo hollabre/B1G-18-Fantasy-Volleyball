@@ -256,7 +256,10 @@ td.pc{color:var(--accent);font-weight:700;}
   .me-lineups{grid-template-columns:1fr;}
   .me-lineup:first-child{border-right:none;border-bottom:1px solid var(--border);}
 }
-/* PLAYER STAT DRAWER */
+/* LOADER SPINNER */
+.loader{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
 .player-main-row:hover{background:rgba(77,184,240,0.05);}
 .player-main-row:hover td{background:transparent;}
 .player-expand-row td{background:rgba(0,0,0,0.2);}
@@ -295,6 +298,9 @@ td.pc{color:var(--accent);font-weight:700;}
 @media(max-width:640px){
   .psd-grid{grid-template-columns:repeat(3,1fr);}
 }
+/* LOADER SPINNER */
+.loader{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -330,244 +336,240 @@ td.pc{color:var(--accent);font-weight:700;}
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-//  LEAGUE DATA  — update each week
+//  GOOGLE SHEETS CONFIGURATION
+//  1. Create a Google Sheet with the tabs listed below
+//  2. Publish it: File → Share → Publish to web → Entire Document → CSV → Publish
+//  3. For each sheet tab, get the URL and paste the SHEET_ID and GID values below
+//  4. The SHEET_ID is the long string in your sheet URL between /d/ and /edit
+//  5. The GID is the number after #gid= in the URL for each tab
+//
+//  Required tabs in your Google Sheet:
+//    • Teams      (columns: id, name, owner, color, photo, wins, losses, pf, pa, streak)
+//    • Players    (columns: name, school, pos, fantasyTeam, fa, slot, photo, pts, lastWk, sets, hitPct, kills, aces, assists, digs, blocks)
+//    • Matchups   (columns: week, home, away, homeScore, awayScore)
+//    • Lineups    (columns: week, gameIndex, side, slot, playerName)
+//    • Playoff    (columns: round, label, seedA, teamA, scoreA, seedB, teamB, scoreB, winner)
+//    • Draft      (columns: round, slot, teamId, playerName, school, pos)
 // ═══════════════════════════════════════════════════════════════
 
-const TEAMS = [
-  // photo: null  →  placeholder shown
-  // photo: 'https://...'  →  your image URL
-  { id:1,  name:'Serves You Right',                   owner:'Abbi Benge',       color:'#e879a0', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/abbi.jpeg' },
-  { id:2,  name:'Kev',                                owner:'Kevin Cline',      color:'#60c8f5', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/kevin.jpg' },
-  { id:3,  name:'Chat B1G',                           owner:'Kaitlyn Dawson',   color:'#38e8c8', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/kaitlyn.jpeg' },
-  { id:4,  name:'Dinks, Dumps & Dimes',               owner:'Danny Douglas',    color:'#f59e0b', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/danny.jpg' },
-  { id:5,  name:'B1G Ballers',                        owner:'Emily Ehman',      color:'#818cf8', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/emily.jpeg' },
-  { id:6,  name:"Sheffield's Terrace Trolls",         owner:'Glenn Halasz',     color:'#fb7185', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/glenn.jpg' },
-  { id:7,  name:'Both Sides of the Chicoine (RIP)',   owner:'Brendan Holland',  color:'#34d399', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/brendan.PNG' },
-  { id:8,  name:'bulgarianqueenvbprincess',            owner:'Elena Kovatcheva', color:'#a78bfa', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/elena.jpg' },
-  { id:9,  name:'Trader Cons',                        owner:'Connor Onion',     color:'#f5604a', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/connor.jpeg' },
-  { id:10, name:'The Exterminators',                  owner:'Alex Struckman',   color:'#0ea5e9', wins:0,losses:0,pf:0,pa:0,streak:0, photo: 'images/alex.png' },
-];
+const SHEET_ID = '1vji_YICqPCQ7OOTdmcTdr40_2YKgk6hA7S6SqUH5bpw';  // <-- paste your Google Sheet ID here
 
-// ─── PLAYERS ───────────────────────────────────────────────────
-// ft: fantasy team id (1-10), or 0 if free agent
-// fa: true = free agent (available to pick up), false = rostered
-// slot: 'OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'
-//       or null for free agents
-// lastWk: last week's fantasy score (number)
-// pts: cumulative season fantasy points
-const PLAYERS = [
-  // ── Team 1: Serves You Right (Abbi Benge) ──────────────────
-  { name:'Jordan Ellis',    school:'Wisconsin',    pos:'OH',  ft:1,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Simone Blake',    school:'Nebraska',     pos:'OH',  ft:1,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Keiko Tanaka',    school:'Michigan',     pos:'MB',  ft:1,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Roma Steele',     school:'Michigan St',  pos:'MB',  ft:1,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Marley Quinn',    school:'Michigan St',  pos:'S',   ft:1,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Chloe Mercer',    school:'Nebraska',     pos:'L',   ft:1,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Bianca Russo',    school:'Nebraska',     pos:'OPP', ft:1,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Zara Ahmed',      school:'Penn State',   pos:'OPP', ft:1,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Viv Torres',      school:'Wisconsin',    pos:'L',   ft:1,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Casey Park',      school:'Ohio State',   pos:'S',   ft:1,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 2: Kev (Kevin Cline) ──────────────────────────────
-  { name:'Nia Okafor',      school:'Wisconsin',    pos:'OH',  ft:2,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Skye Martins',    school:'Iowa',         pos:'OH',  ft:2,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Lila Eze',        school:'Penn State',   pos:'MB',  ft:2,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Jade Winters',    school:'Indiana',      pos:'MB',  ft:2,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Taylor Sun',      school:'Iowa',         pos:'S',   ft:2,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Mia Santos',      school:'Ohio State',   pos:'L',   ft:2,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Naomi Peters',    school:'Michigan',     pos:'OPP', ft:2,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Faye Kurosawa',   school:'Iowa',         pos:'OPP', ft:2,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Zoe Penn',        school:'Michigan',     pos:'OH',  ft:2,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Cora West',       school:'Indiana',      pos:'S',   ft:2,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 3: Chat B1G (Kaitlyn Dawson) ──────────────────────
-  { name:'Priya Menon',     school:'Purdue',       pos:'OH',  ft:3,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Avery Cross',     school:'Penn State',   pos:'OH',  ft:3,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Tess Holbrook',   school:'Rutgers',      pos:'MB',  ft:3,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Cam Walsh',       school:'Iowa',         pos:'MB',  ft:3,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Jordan Ellis B',  school:'Wisconsin',    pos:'S',   ft:3,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Erin Holt',       school:'Minnesota',    pos:'L',   ft:3,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Tori Vasquez',    school:'Purdue',       pos:'OPP', ft:3,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Deja Morris',     school:'Nebraska',     pos:'OH',  ft:3,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Tara Flynn',      school:'Michigan',     pos:'L',   ft:3,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Nadia Cheng',     school:'Purdue',       pos:'S',   ft:3,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 4: Dinks, Dumps & Dimes (Danny Douglas) ───────────
-  { name:'Bree Fontaine',   school:'Minnesota',    pos:'OH',  ft:4,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Dani Reese',      school:'Northwestern', pos:'OH',  ft:4,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Keiko Tanaka B',  school:'Michigan',     pos:'MB',  ft:4,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Jade Winters B',  school:'Indiana',      pos:'MB',  ft:4,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Sofia Ruiz',      school:'Penn State',   pos:'S',   ft:4,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Leah Osei',       school:'Rutgers',      pos:'L',   ft:4,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Hana Novak',      school:'Illinois',     pos:'OPP', ft:4,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Quinn Moss',      school:'Rutgers',      pos:'OH',  ft:4,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Rue Lind',        school:'Penn State',   pos:'L',   ft:4,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Mara Bloom',      school:'Ohio State',   pos:'S',   ft:4,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 5: B1G Ballers (Emily Ehman) ──────────────────────
-  { name:'Amara Diallo',    school:'Michigan St',  pos:'OH',  ft:5,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Roxy Bell',       school:'Michigan',     pos:'OH',  ft:5,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Ava McTeer',      school:'Minnesota',    pos:'MB',  ft:5,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Hana Wells',      school:'Ohio State',   pos:'MB',  ft:5,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Yuna Kim',        school:'Michigan',     pos:'S',   ft:5,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Rio Nakamura',    school:'Indiana',      pos:'L',   ft:5,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Fiona Ray',       school:'Minnesota',    pos:'OPP', ft:5,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Cass Tran',       school:'Nebraska',     pos:'OH',  ft:5,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Ally Cho',        school:'Northwestern', pos:'L',   ft:5,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Mave Holt',       school:'Minnesota',    pos:'MB',  ft:5,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 6: Sheffield's Terrace Trolls (Glenn Halasz) ───────
-  { name:'Lena Fox',        school:'Wisconsin',    pos:'OH',  ft:6,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Bex Crane',       school:'Ohio State',   pos:'OH',  ft:6,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Val Okonkwo',     school:'Wisconsin',    pos:'MB',  ft:6,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Nour Hassan',     school:'Illinois',     pos:'MB',  ft:6,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Kyra Bass',       school:'Northwestern', pos:'S',   ft:6,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Drew Bell',       school:'Michigan St',  pos:'L',   ft:6,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Wren Blackwell',  school:'Indiana',      pos:'OPP', ft:6,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Nell Grant',      school:'Minnesota',    pos:'OPP', ft:6,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Greta Hall',      school:'Iowa',         pos:'L',   ft:6,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Suki Rao',        school:'Iowa',         pos:'OPP', ft:6,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 7: Both Sides of the Chicoine (RIP) (Brendan Holland)
-  { name:'Ora Chen',        school:'Wisconsin',    pos:'OH',  ft:7,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Petra Jovic',     school:'Northwestern', pos:'OH',  ft:7,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Isla Pham',       school:'Indiana',      pos:'MB',  ft:7,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Ellie Voss',      school:'Michigan St',  pos:'MB',  ft:7,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Dori Abe',        school:'Illinois',     pos:'S',   ft:7,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Viv Torres B',    school:'Wisconsin',    pos:'L',   ft:7,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Bria Scott',      school:'Indiana',      pos:'OPP', ft:7,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Remi Lake',       school:'Indiana',      pos:'OH',  ft:7,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Cleo Marsh',      school:'Rutgers',      pos:'S',   ft:7,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Juno Park',       school:'Northwestern', pos:'S',   ft:7,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 8: bulgarianqueenvbprincess (Elena Kovatcheva) ─────
-  { name:'Tess Kwan',       school:'Penn State',   pos:'OH',  ft:8,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Jade Lam',        school:'Ohio State',   pos:'OH',  ft:8,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Nora Stein',      school:'Michigan',     pos:'MB',  ft:8,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Sable Ford',      school:'Iowa',         pos:'MB',  ft:8,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Eden Cruz',       school:'Illinois',     pos:'S',   ft:8,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Pax Olin',        school:'Purdue',       pos:'L',   ft:8,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Elia Soto',       school:'Illinois',     pos:'OPP', ft:8,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Stella King',     school:'Rutgers',      pos:'OPP', ft:8,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Lux Avery',       school:'Nebraska',     pos:'L',   ft:8,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Pippa Shore',     school:'Nebraska',     pos:'OPP', ft:8,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 9: Trader Cons (Connor Onion) ─────────────────────
-  { name:'Dani Post',       school:'Wisconsin',    pos:'OH',  ft:9,  fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Skye Martins B',  school:'Iowa',         pos:'OH',  ft:9,  fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Val Okonkwo B',   school:'Wisconsin',    pos:'MB',  ft:9,  fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Mila Torres',     school:'Purdue',       pos:'MB',  ft:9,  fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Mara Bloom B',    school:'Ohio State',   pos:'S',   ft:9,  fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Leah Osei B',     school:'Rutgers',      pos:'L',   ft:9,  fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Tori Vasquez B',  school:'Purdue',       pos:'OPP', ft:9,  fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Ines Fox',        school:'Nebraska',     pos:'OPP', ft:9,  fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Ally Cho B',      school:'Northwestern', pos:'L',   ft:9,  fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Remi Lake B',     school:'Indiana',      pos:'OH',  ft:9,  fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── Team 10: The Exterminators (Alex Struckman) ─────────────
-  { name:'Amara Diallo B',  school:'Michigan St',  pos:'OH',  ft:10, fa:false, photo:null, slot:'OH1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Quinn Moss B',    school:'Rutgers',      pos:'OH',  ft:10, fa:false, photo:null, slot:'OH2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Nora Stein B',    school:'Michigan',     pos:'MB',  ft:10, fa:false, photo:null, slot:'MB1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Ellie Voss B',    school:'Michigan St',  pos:'MB',  ft:10, fa:false, photo:null, slot:'MB2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Eden Cruz B',     school:'Illinois',     pos:'S',   ft:10, fa:false, photo:null, slot:'S',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Rio Nakamura B',  school:'Indiana',      pos:'L',   ft:10, fa:false, photo:null, slot:'L',    pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Bria Scott B',    school:'Indiana',      pos:'OPP', ft:10, fa:false, photo:null, slot:'FLEX', pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Cass Tran B',     school:'Nebraska',     pos:'OH',  ft:10, fa:false, photo:null, slot:'BN1',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Kyra Bass B',     school:'Northwestern', pos:'S',   ft:10, fa:false, photo:null, slot:'BN2',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Mave Holt B',     school:'Minnesota',    pos:'MB',  ft:10, fa:false, photo:null, slot:'BN3',  pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-
-  // ── FREE AGENTS (fa:true, ft:0, slot:null) ──────────────────
-  // Add/remove players here as they get picked up or dropped.
-  // There are placeholder names below — replace with real Big Ten players.
-  { name:'Priya Menon B',   school:'Purdue',       pos:'OH',  ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Hana Novak B',    school:'Illinois',     pos:'OH',  ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Lena Fox B',      school:'Wisconsin',    pos:'OH',  ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Sofia Ruiz B',    school:'Penn State',   pos:'S',   ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Tess Holbrook B', school:'Rutgers',      pos:'MB',  ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Chloe Mercer B',  school:'Nebraska',     pos:'L',   ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Dani Reese B',    school:'Northwestern', pos:'OH',  ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Erin Holt B',     school:'Minnesota',    pos:'L',   ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Fiona Ray B',     school:'Minnesota',    pos:'OPP', ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Yuna Kim B',      school:'Michigan',     pos:'S',   ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Nell Grant B',    school:'Minnesota',    pos:'OPP', ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Bex Crane B',     school:'Ohio State',   pos:'OH',  ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Greta Hall B',    school:'Iowa',         pos:'L',   ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Cam Walsh B',     school:'Iowa',         pos:'MB',  ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  { name:'Nadia Cheng B',   school:'Purdue',       pos:'S',   ft:0, fa:true, photo:null, slot:null, pts:0, lastWk:0, kills:0,aces:0,blocks:0,digs:0,assists:0, hitPct:'.000', sets:0 },
-  // Add more free agents here — aim for 150-200+ entries total
-];
-
-// MATCHUPS: each week has 5 games.
-// lineup: array of 10 player names in slot order [OH1,OH2,MB1,MB2,S,L,FLEX,BN1,BN2,BN3]
-// playerScores: map of playerName -> score for that week (fill in after each week)
-const MATCHUPS = [
-  { week:'Week 1', games:[
-    { home:1, away:6,  homeScore:0, awayScore:0,
-      homeLineup:['Jordan Ellis','Simone Blake','Keiko Tanaka','Roma Steele','Marley Quinn','Chloe Mercer','Bianca Russo','Zara Ahmed','Viv Torres','Casey Park'],
-      awayLineup:['Lena Fox','Bex Crane','Val Okonkwo','Nour Hassan','Kyra Bass','Drew Bell','Wren Blackwell','Nell Grant','Greta Hall','Suki Rao'],
-      playerScores:{} },
-    { home:2, away:7,  homeScore:0, awayScore:0,
-      homeLineup:['Nia Okafor','Skye Martins','Lila Eze','Jade Winters','Taylor Sun','Mia Santos','Naomi Peters','Faye Kurosawa','Zoe Penn','Cora West'],
-      awayLineup:['Ora Chen','Petra Jovic','Isla Pham','Ellie Voss','Dori Abe','Viv Torres B','Bria Scott','Remi Lake','Cleo Marsh','Juno Park'],
-      playerScores:{} },
-    { home:3, away:8,  homeScore:0, awayScore:0,
-      homeLineup:['Priya Menon','Avery Cross','Tess Holbrook','Cam Walsh','Jordan Ellis B','Erin Holt','Tori Vasquez','Deja Morris','Tara Flynn','Nadia Cheng'],
-      awayLineup:['Tess Kwan','Jade Lam','Nora Stein','Sable Ford','Eden Cruz','Pax Olin','Elia Soto','Stella King','Lux Avery','Pippa Shore'],
-      playerScores:{} },
-    { home:4, away:9,  homeScore:0, awayScore:0,
-      homeLineup:['Bree Fontaine','Dani Reese','Keiko Tanaka B','Jade Winters B','Sofia Ruiz','Leah Osei','Hana Novak','Quinn Moss','Rue Lind','Mara Bloom'],
-      awayLineup:['Dani Post','Skye Martins B','Val Okonkwo B','Mila Torres','Mara Bloom B','Leah Osei B','Tori Vasquez B','Ines Fox','Ally Cho B','Remi Lake B'],
-      playerScores:{} },
-    { home:5, away:10, homeScore:0, awayScore:0,
-      homeLineup:['Amara Diallo','Roxy Bell','Ava McTeer','Hana Wells','Yuna Kim','Rio Nakamura','Fiona Ray','Cass Tran','Ally Cho','Mave Holt'],
-      awayLineup:['Amara Diallo B','Quinn Moss B','Nora Stein B','Ellie Voss B','Eden Cruz B','Rio Nakamura B','Bria Scott B','Cass Tran B','Kyra Bass B','Mave Holt B'],
-      playerScores:{} },
-  ]},
-  // Add Week 2 here after it's played:
-  // { week:'Week 2', games:[ ... ] },
-];
-
-// DRAFT PICKS
-const DRAFT_PICKS = [
-  {r:1,s:1, t:1, name:'Jordan Ellis',   school:'Wisconsin',  pos:'OH'},
-  {r:1,s:2, t:2, name:'Nia Okafor',     school:'Wisconsin',  pos:'OH'},
-  {r:1,s:3, t:3, name:'Priya Menon',    school:'Purdue',     pos:'OH'},
-  {r:1,s:4, t:4, name:'Bree Fontaine',  school:'Minnesota',  pos:'OH'},
-  {r:1,s:5, t:5, name:'Amara Diallo',   school:'Mich St',    pos:'OH'},
-  {r:1,s:6, t:6, name:'Lena Fox',       school:'Wisconsin',  pos:'OH'},
-  {r:1,s:7, t:7, name:'Ora Chen',       school:'Wisconsin',  pos:'OH'},
-  {r:1,s:8, t:8, name:'Tess Kwan',      school:'Penn State', pos:'OPP'},
-  {r:1,s:9, t:9, name:'Dani Post',      school:'Wisconsin',  pos:'OH'},
-  {r:1,s:10,t:10,name:'Amara Diallo B', school:'Mich St',    pos:'OH'},
-  {r:2,s:1, t:10,name:'Quinn Moss B',   school:'Rutgers',    pos:'OH'},
-  {r:2,s:2, t:9, name:'Skye Martins B', school:'Iowa',       pos:'OH'},
-  {r:2,s:3, t:8, name:'Jade Lam',       school:'Ohio State', pos:'OH'},
-  {r:2,s:4, t:7, name:'Petra Jovic',    school:'Northwstn',  pos:'OH'},
-  {r:2,s:5, t:6, name:'Bex Crane',      school:'Ohio State', pos:'OH'},
-  {r:2,s:6, t:5, name:'Roxy Bell',      school:'Michigan',   pos:'OH'},
-  {r:2,s:7, t:4, name:'Dani Reese',     school:'Northwstn',  pos:'OH'},
-  {r:2,s:8, t:3, name:'Avery Cross',    school:'Penn State', pos:'OH'},
-  {r:2,s:9, t:2, name:'Skye Martins',   school:'Iowa',       pos:'OH'},
-  {r:2,s:10,t:1, name:'Simone Blake',   school:'Nebraska',   pos:'OH'},
-];
-
-// PLAYOFF BRACKET — Top 8 teams, 3 weeks (Wk 10-12)
-// Seeding: 1v8, 2v7, 3v6, 4v5 in quarterfinals
-// Update tid values to match the actual team IDs once standings are final.
-// Set winner: to the winning seed number after each round is played.
-const PLAYOFF = {
-  qf:[
-    { label:'QF \u00b7 Seed 1 vs 8', teamA:{seed:1,tid:1,score:0}, teamB:{seed:8,tid:8,score:0}, winner:null },
-    { label:'QF \u00b7 Seed 2 vs 7', teamA:{seed:2,tid:2,score:0}, teamB:{seed:7,tid:7,score:0}, winner:null },
-    { label:'QF \u00b7 Seed 3 vs 6', teamA:{seed:3,tid:3,score:0}, teamB:{seed:6,tid:6,score:0}, winner:null },
-    { label:'QF \u00b7 Seed 4 vs 5', teamA:{seed:4,tid:4,score:0}, teamB:{seed:5,tid:5,score:0}, winner:null },
-  ],
-  sf:[
-    { label:'SF 1 \u00b7 W(1v8) vs W(4v5)', teamA:null, teamB:null, winner:null },
-    { label:'SF 2 \u00b7 W(2v7) vs W(3v6)', teamA:null, teamB:null, winner:null },
-  ],
-  final:{ teamA:null, teamB:null, winner:null },
+const SHEET_GIDS = {
+  teams:    '0',        // <-- replace with GID for your Teams tab
+  players:  '991574399',  // <-- replace with GID for your Players tab
+  matchups: '375128671',  // <-- replace with GID for your Matchups tab
+  lineups:  '1674016992',  // <-- replace with GID for your Lineups tab
+  playoff:  '991284458',  // <-- replace with GID for your Playoff tab
+  draft:    '2009060021',  // <-- replace with GID for your Draft tab
 };
+
+// ── Fetch a single sheet tab as parsed rows ──────────────────────
+async function fetchSheet(tabKey) {
+  const gid = SHEET_GIDS[tabKey];
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+  const res  = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch ${tabKey}: ${res.status}`);
+  const text = await res.text();
+  return parseCSV(text);
+}
+
+// ── Simple CSV parser (handles quoted fields with commas) ─────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = splitCSVLine(line);
+    const obj  = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+    return obj;
+  }).filter(row => Object.values(row).some(v => v !== ''));
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── Number / bool helpers ─────────────────────────────────────────
+const num  = v => parseFloat(v) || 0;
+const bool = v => v === 'TRUE' || v === 'true' || v === '1';
+
+// ═══════════════════════════════════════════════════════════════
+//  DATA — populated from Google Sheets at load time
+//  These start empty and get filled by loadAllData()
+// ═══════════════════════════════════════════════════════════════
+let TEAMS    = [];
+let PLAYERS  = [];
+let MATCHUPS = [];
+let DRAFT_PICKS = [];
+let PLAYOFF  = { qf:[], sf:[], final:{} };
+
+// ── Transform raw sheet rows into app data ─────────────────────
+
+function buildTeams(rows) {
+  return rows.map(r => ({
+    id:      num(r.id),
+    name:    r.name,
+    owner:   r.owner,
+    color:   r.color || '#60c8f5',
+    photo:   r.photo || null,
+    wins:    num(r.wins),
+    losses:  num(r.losses),
+    pf:      num(r.pf),
+    pa:      num(r.pa),
+    streak:  num(r.streak),
+  }));
+}
+
+function buildPlayers(rows) {
+  return rows.map(r => ({
+    name:     r.name,
+    school:   r.school,
+    pos:      r.pos,
+    ft:       num(r.fantasyTeam),
+    fa:       bool(r.fa),
+    slot:     r.slot || null,
+    photo:    r.photo || null,
+    pts:      num(r.pts),
+    lastWk:   num(r.lastWk),
+    sets:     num(r.sets),
+    hitPct:   r.hitPct || '.000',
+    kills:    num(r.kills),
+    aces:     num(r.aces),
+    assists:  num(r.assists),
+    digs:     num(r.digs),
+    blocks:   num(r.blocks),
+  }));
+}
+
+function buildMatchups(rows, lineupRows) {
+  // Group by week
+  const weeks = {};
+  rows.forEach(r => {
+    const wk = r.week;
+    if (!weeks[wk]) weeks[wk] = { week: wk, games: [] };
+    weeks[wk].games.push({
+      home:       num(r.home),
+      away:       num(r.away),
+      homeScore:  num(r.homeScore),
+      awayScore:  num(r.awayScore),
+      homeLineup: [],
+      awayLineup: [],
+      playerScores: {},
+    });
+  });
+
+  // Attach lineups
+  lineupRows.forEach(r => {
+    const wk  = r.week;
+    const gi  = num(r.gameIndex);
+    const side = r.side; // 'home' or 'away'
+    if (!weeks[wk] || !weeks[wk].games[gi]) return;
+    const game = weeks[wk].games[gi];
+    const SLOT_ORDER = ['OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'];
+    const idx  = SLOT_ORDER.indexOf(r.slot);
+    if (side === 'home') game.homeLineup[idx < 0 ? game.homeLineup.length : idx] = r.playerName;
+    else                 game.awayLineup[idx < 0 ? game.awayLineup.length : idx] = r.playerName;
+    if (r.score) game.playerScores[r.playerName] = num(r.score);
+  });
+
+  // Sort weeks newest first (current week first)
+  return Object.values(weeks).sort((a, b) => {
+    const na = parseInt(a.week.replace(/\D/g,'')) || 0;
+    const nb = parseInt(b.week.replace(/\D/g,'')) || 0;
+    return nb - na;
+  });
+}
+
+function buildDraft(rows) {
+  return rows.map(r => ({
+    r: num(r.round),
+    s: num(r.slot),
+    t: num(r.teamId),
+    name:   r.playerName,
+    school: r.school,
+    pos:    r.pos,
+  }));
+}
+
+function buildPlayoff(rows) {
+  const qf = [], sf = [];
+  let final = { teamA: null, teamB: null, winner: null };
+
+  rows.forEach(r => {
+    const entry = {
+      label:  r.label,
+      teamA:  r.teamA ? { seed: num(r.seedA), tid: num(r.teamA), score: num(r.scoreA) } : null,
+      teamB:  r.teamB ? { seed: num(r.seedB), tid: num(r.teamB), score: num(r.scoreB) } : null,
+      winner: r.winner ? num(r.winner) : null,
+    };
+    if (r.round === 'qf')    qf.push(entry);
+    else if (r.round === 'sf')    sf.push(entry);
+    else if (r.round === 'final') final = entry;
+  });
+
+  return { qf, sf, final };
+}
+
+// ── Load everything and render ────────────────────────────────────
+async function loadAllData() {
+  showLoadingState();
+  try {
+    const [teamRows, playerRows, matchupRows, lineupRows, playoffRows, draftRows] =
+      await Promise.all([
+        fetchSheet('teams'),
+        fetchSheet('players'),
+        fetchSheet('matchups'),
+        fetchSheet('lineups'),
+        fetchSheet('playoff'),
+        fetchSheet('draft'),
+      ]);
+
+    TEAMS       = buildTeams(teamRows);
+    PLAYERS     = buildPlayers(playerRows);
+    MATCHUPS    = buildMatchups(matchupRows, lineupRows);
+    DRAFT_PICKS = buildDraft(draftRows);
+    PLAYOFF     = buildPlayoff(playoffRows);
+
+    renderAll();
+    hideLoadingState();
+  } catch (err) {
+    showError(err);
+  }
+}
+
+function showLoadingState() {
+  document.querySelectorAll('.section').forEach(s => {
+    s.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;gap:1rem">'
+      + '<div class="loader"></div>'
+      + '<div style="font-family:Space Mono,monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Loading from Google Sheets...</div>'
+      + '</div>';
+  });
+}
+
+function hideLoadingState() {}
+
+function showError(err) {
+  document.querySelectorAll('.section').forEach(s => {
+    s.innerHTML = '<div style="padding:2rem;font-family:Space Mono,monospace;font-size:0.75rem;color:var(--accent3)">'
+      + '<div style="font-size:1rem;margin-bottom:0.75rem">&#9888; Could not load data from Google Sheets</div>'
+      + '<div style="color:var(--muted);margin-bottom:1rem">' + err.message + '</div>'
+      + '<div style="color:var(--muted);line-height:1.8">'
+      + '1. Make sure SHEET_ID and SHEET_GIDS are filled in correctly<br>'
+      + '2. Make sure the sheet is published: <b style="color:var(--text)">File &rarr; Share &rarr; Publish to web &rarr; Entire Document &rarr; CSV</b><br>'
+      + '3. Check that your sheet tab names match the GIDs above'
+      + '</div>'
+      + '</div>';
+  });
+}
 
 // ═══════════════════════════════════════════════════════════════
 //  HELPERS
@@ -575,7 +577,7 @@ const PLAYOFF = {
 const gt  = id => TEAMS.find(t => t.id === id);
 const SH  = '<span class="si">';
 const SE  = '</span>';
-const SLOT_ORDER = ['OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'];
+const SLOT_ORDER  = ['OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'];
 const SLOT_LABELS = { OH1:'OH', OH2:'OH', MB1:'MB', MB2:'MB', S:'S', L:'L', FLEX:'FLEX', BN1:'BN', BN2:'BN', BN3:'BN' };
 const BENCH_SLOTS = ['BN1','BN2','BN3'];
 
@@ -603,6 +605,15 @@ function toggleLineup(id) {
   toggle.classList.toggle('open', !isOpen);
 }
 
+function togglePlayerRow(rowId) {
+  const row   = document.getElementById(rowId);
+  const arrow = document.getElementById('arr-' + rowId);
+  if (!row) return;
+  const isOpen = row.style.display !== 'none';
+  row.style.display = isOpen ? 'none' : 'table-row';
+  if (arrow) arrow.innerHTML = isOpen ? '&#9660;' : '&#9650;';
+}
+
 function pb(pos) { return '<span class="pb pb-' + pos + '">' + pos + '</span>'; }
 function strkStr(s) { return s===0?'&mdash;':(s>0?'W':'L')+Math.abs(s); }
 function strkCol(s) { return s>0?'var(--accent2)':s<0?'var(--accent3)':'var(--muted)'; }
@@ -611,23 +622,16 @@ function fillPct(w,l){ return (w+l)===0?0:(w/(w+l)*100).toFixed(0); }
 function faBadge()  { return '<span class="fa-badge">FA</span>'; }
 function initials(name){ return name.replace(/[()]/g,'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join(''); }
 
-
-// ── LOGO / PHOTO HELPERS ─────────────────────────────────────────
-function teamLogoCell(t, align) {
+function teamLogoCell(t) {
   if (!t) return '';
   const style = 'width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:0.7rem;letter-spacing:0.04em;overflow:hidden;border:2px solid '+t.color+'44;background:'+t.color+'18;color:'+t.color+';';
-  if (t.photo) {
-    return '<div style="'+style+'"><img src="'+t.photo+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>';
-  }
+  if (t.photo) return '<div style="'+style+'"><img src="'+t.photo+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>';
   return '<div style="'+style+'">'+initials(t.name)+'</div>';
 }
 
 function playerPhotoCell(p) {
   const style = 'width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:Space Mono,monospace;font-size:0.55rem;overflow:hidden;border:1px solid var(--border);background:var(--surface2);color:var(--muted);';
-  if (p.photo) {
-    return '<div style="'+style+'"><img src="'+p.photo+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>';
-  }
-  // Initials from player name
+  if (p.photo) return '<div style="'+style+'"><img src="'+p.photo+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>';
   const ini = p.name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
   return '<div style="'+style+'">'+ini+'</div>';
 }
@@ -638,51 +642,38 @@ function playerPhotoCell(p) {
 function renderTeams() {
   const sorted = [...TEAMS].sort((a,b)=>b.wins-a.wins||(b.pf-b.pa)-(a.pf-a.pa));
   let html = '<div class="sec-header"><div><div class="sec-title">THE <span>TEAMS</span></div>'
-           + '<div class="sec-desc">10 teams &middot; 2026 Season &middot; Click "View Roster" to expand</div></div></div>'
+           + '<div class="sec-desc">'+TEAMS.length+' teams &middot; 2026 Season &middot; Click "View Roster" to expand</div></div></div>'
            + '<div class="teams-grid">';
   sorted.forEach((t,i) => {
-    const roster = PLAYERS.filter(p=>p.ft===t.id).sort((a,b)=>{
-      return SLOT_ORDER.indexOf(a.slot)-SLOT_ORDER.indexOf(b.slot);
-    });
-    const diff = t.pf-t.pa;
-    const photo = t.photo
+    const roster = PLAYERS.filter(p=>p.ft===t.id).sort((a,b)=>SLOT_ORDER.indexOf(a.slot)-SLOT_ORDER.indexOf(b.slot));
+    const diff   = t.pf - t.pa;
+    const photo  = t.photo
       ? '<img src="'+t.photo+'" alt="'+t.name+'">'
       : '<div class="tc-photo-icon">&#128248;</div><div class="tc-photo-label">Add Team Photo</div>';
     const rows = roster.map(p => {
       const isBench = BENCH_SLOTS.includes(p.slot);
-      return '<tr' + (isBench?' style="opacity:0.65"':'') + '>'
-        + '<td style="font-family:Space Mono,monospace;font-size:0.55rem;color:var(--muted);padding:0.5rem 0.75rem;white-space:nowrap">'
-        + (isBench?'BENCH':SLOT_LABELS[p.slot]||p.slot) + '</td>'
-        + '<td class="rname">'+p.name+'</td>'
-        + '<td class="rschool">'+p.school+'</td>'
-        + '<td>'+pb(p.pos)+'</td>'
-        + '<td class="rpts">'+p.pts.toFixed(1)+'</td>'
-        + '</tr>';
+      return '<tr'+(isBench?' style="opacity:0.65"':'')+'>'
+        +'<td style="font-family:Space Mono,monospace;font-size:0.55rem;color:var(--muted);padding:0.5rem 0.75rem;white-space:nowrap">'+(isBench?'BENCH':SLOT_LABELS[p.slot]||p.slot)+'</td>'
+        +'<td class="rname">'+p.name+'</td><td class="rschool">'+p.school+'</td>'
+        +'<td>'+pb(p.pos)+'</td><td class="rpts">'+p.pts.toFixed(1)+'</td></tr>';
     }).join('');
     html += '<div class="team-card">'
-          + '<div class="tc-stripe" style="background:'+t.color+'"></div>'
-          + '<div class="tc-top">'
-          +   '<div class="tc-photo">'+photo+'</div>'
-          +   '<div class="tc-info">'
-          +     '<div class="tc-header"><div><div class="tc-name">'+t.name+'</div><div class="tc-owner">'+t.owner+'</div></div>'
-          +     '<div class="tc-rank">'+(i+1)+'</div></div>'
-          +     '<div class="tc-stats">'
-          +       '<div class="stat-box"><div class="stat-val">'+t.wins+'-'+t.losses+'</div><div class="stat-lbl">Record</div></div>'
-          +       '<div class="stat-box"><div class="stat-val">'+t.pf.toFixed(0)+'</div><div class="stat-lbl">Pts For</div></div>'
-          +       '<div class="stat-box"><div class="stat-val">'+pct(t.wins,t.losses)+'</div><div class="stat-lbl">Win %</div></div>'
-          +       '<div class="stat-box"><div class="stat-val">'+(diff>=0?'+':'')+diff.toFixed(0)+'</div><div class="stat-lbl">Diff</div></div>'
-          +       '<div class="stat-box"><div class="stat-val">'+roster.length+'</div><div class="stat-lbl">Roster</div></div>'
-          +       '<div class="stat-box"><div class="stat-val" style="color:'+strkCol(t.streak)+'">'+strkStr(t.streak)+'</div><div class="stat-lbl">Streak</div></div>'
-          +     '</div>'
-          +   '</div>'
-          + '</div>'
-          + '<div class="roster-toggle" id="rt'+t.id+'" onclick="toggleRoster('+t.id+')">'
-          +   '<span>View Roster ('+roster.length+' players)</span><span class="toggle-arrow">&#9660;</span>'
-          + '</div>'
-          + '<div class="roster-panel" id="rp'+t.id+'">'
-          +   '<table class="rtable"><thead><tr><th>Slot</th><th>Player</th><th>School</th><th>Pos</th><th style="text-align:right">FPTS</th></tr></thead>'
-          +   '<tbody>'+rows+'</tbody></table>'
-          + '</div></div>';
+      +'<div class="tc-stripe" style="background:'+t.color+'"></div>'
+      +'<div class="tc-top"><div class="tc-photo">'+photo+'</div>'
+      +'<div class="tc-info"><div class="tc-header"><div><div class="tc-name">'+t.name+'</div><div class="tc-owner">'+t.owner+'</div></div><div class="tc-rank">'+(i+1)+'</div></div>'
+      +'<div class="tc-stats">'
+      +'<div class="stat-box"><div class="stat-val">'+t.wins+'-'+t.losses+'</div><div class="stat-lbl">Record</div></div>'
+      +'<div class="stat-box"><div class="stat-val">'+t.pf.toFixed(0)+'</div><div class="stat-lbl">Pts For</div></div>'
+      +'<div class="stat-box"><div class="stat-val">'+pct(t.wins,t.losses)+'</div><div class="stat-lbl">Win %</div></div>'
+      +'<div class="stat-box"><div class="stat-val">'+(diff>=0?'+':'')+diff.toFixed(0)+'</div><div class="stat-lbl">Diff</div></div>'
+      +'<div class="stat-box"><div class="stat-val">'+roster.length+'</div><div class="stat-lbl">Roster</div></div>'
+      +'<div class="stat-box"><div class="stat-val" style="color:'+strkCol(t.streak)+'">'+strkStr(t.streak)+'</div><div class="stat-lbl">Streak</div></div>'
+      +'</div></div></div>'
+      +'<div class="roster-toggle" id="rt'+t.id+'" onclick="toggleRoster('+t.id+')">'
+      +'<span>View Roster ('+roster.length+' players)</span><span class="toggle-arrow">&#9660;</span></div>'
+      +'<div class="roster-panel" id="rp'+t.id+'">'
+      +'<table class="rtable"><thead><tr><th>Slot</th><th>Player</th><th>School</th><th>Pos</th><th style="text-align:right">FPTS</th></tr></thead>'
+      +'<tbody>'+rows+'</tbody></table></div></div>';
   });
   html += '</div>';
   document.getElementById('teams').innerHTML = html;
@@ -695,7 +686,12 @@ let scoresWeekIdx = 0;
 
 function renderScores() {
   const totalWeeks = MATCHUPS.length;
-  // Week nav buttons
+  if (totalWeeks === 0) {
+    document.getElementById('scores').innerHTML = '<div class="sec-header"><div><div class="sec-title">MATCH<span>UPS</span></div></div></div><div style="padding:2rem;font-family:Space Mono,monospace;font-size:0.75rem;color:var(--muted)">No matchup data yet.</div>';
+    return;
+  }
+  scoresWeekIdx = Math.min(scoresWeekIdx, totalWeeks - 1);
+
   let navHtml = '<div class="week-nav"><span class="week-nav-label">Jump to week:</span>';
   MATCHUPS.forEach((wk, idx) => {
     navHtml += '<button class="week-nav-btn'+(idx===scoresWeekIdx?' active':'')+'" onclick="setScoresWeek('+idx+')">'+wk.week+'</button>';
@@ -706,71 +702,51 @@ function renderScores() {
   let matchesHtml = '';
   week.games.forEach((g, gi) => {
     const home = gt(g.home), away = gt(g.away);
-    const hw   = g.homeScore > g.awayScore && g.homeScore > 0;
-    const aw   = g.awayScore > g.homeScore && g.awayScore > 0;
-    const mid  = scoresWeekIdx * 100 + gi;
+    if (!home || !away) return;
+    const hw  = g.homeScore > g.awayScore && g.homeScore > 0;
+    const aw  = g.awayScore > g.homeScore && g.awayScore > 0;
+    const mid = scoresWeekIdx * 100 + gi;
 
-    // Build lineup panels
-    const lineupHtml = (lineup, teamId, side) => {
+    const lineupHtml = (lineup, teamId) => {
       const t = gt(teamId);
       const starters = SLOT_ORDER.slice(0,7).map((slot, si) => {
-        const name = lineup[si] || '—';
-        const score = g.playerScores[name] !== undefined ? g.playerScores[name].toFixed(1) : '—';
-        return '<div class="me-player-row">'
-          + '<span class="me-slot">'+SLOT_LABELS[slot]+'</span>'
-          + '<div><div class="me-pname">'+name+'</div></div>'
-          + '<span class="me-ppts">'+score+'</span>'
-          + '</div>';
+        const name  = lineup[si] || '&mdash;';
+        const score = g.playerScores[name] !== undefined ? g.playerScores[name].toFixed(1) : '&mdash;';
+        return '<div class="me-player-row"><span class="me-slot">'+SLOT_LABELS[slot]+'</span><div><div class="me-pname">'+name+'</div></div><span class="me-ppts">'+score+'</span></div>';
       }).join('');
       const bench = SLOT_ORDER.slice(7).map((slot, si) => {
-        const name = lineup[7+si] || '—';
-        const score = g.playerScores[name] !== undefined ? g.playerScores[name].toFixed(1) : '—';
-        return '<div class="me-player-row bench">'
-          + '<span class="me-slot">BN</span>'
-          + '<div><div class="me-pname">'+name+'</div></div>'
-          + '<span class="me-ppts">'+score+'</span>'
-          + '</div>';
+        const name  = lineup[7+si] || '&mdash;';
+        const score = g.playerScores[name] !== undefined ? g.playerScores[name].toFixed(1) : '&mdash;';
+        return '<div class="me-player-row bench"><span class="me-slot">BN</span><div><div class="me-pname">'+name+'</div></div><span class="me-ppts">'+score+'</span></div>';
       }).join('');
-      return '<div class="me-lineup">'
-        + '<div class="me-lineup-title" style="color:'+t.color+'">'+t.name+'</div>'
-        + starters
-        + '<div class="me-bench-divider">&#9472; Bench</div>'
-        + bench
-        + '</div>';
+      return '<div class="me-lineup"><div class="me-lineup-title" style="color:'+(t?t.color:'var(--accent)')+'">'+( t?t.name:'Team')+'</div>'+starters+'<div class="me-bench-divider">&#9472; Bench</div>'+bench+'</div>';
     };
 
     matchesHtml += '<div class="matchup-expanded">'
-      + '<div class="me-header">'
-      +   '<div class="me-team">'+teamLogoCell(home)+'<div><div class="me-tname">'+home.name+'</div><div class="me-owner">'+home.owner+'</div></div></div>'
-      +   '<div><div class="me-scores">'
-      +     '<div class="me-score '+(hw?'win':'lose')+'">'+g.homeScore.toFixed(1)+'</div>'
-      +     '<div class="me-sep">&ndash;</div>'
-      +     '<div class="me-score '+(aw?'win':'lose')+'">'+g.awayScore.toFixed(1)+'</div>'
-      +   '</div></div>'
-      +   '<div class="me-team r"><div><div class="me-tname">'+away.name+'</div><div class="me-owner">'+away.owner+'</div></div>'+teamLogoCell(away)+'</div>'
-      + '</div>'
-      + '<div class="expand-toggle" id="lt'+mid+'" onclick="toggleLineup('+mid+')">'
-      +   '<span>View Lineups &amp; Player Scores</span><span class="earrow">&#9660;</span>'
-      + '</div>'
-      + '<div class="lineup-panel" id="lp'+mid+'">'
-      +   '<div class="me-lineups">'
-      +     lineupHtml(g.homeLineup||[], g.home, 'home')
-      +     lineupHtml(g.awayLineup||[], g.away, 'away')
-      +   '</div>'
-      + '</div>'
-      + '</div>';
+      +'<div class="me-header">'
+      +'<div class="me-team">'+teamLogoCell(home)+'<div><div class="me-tname">'+home.name+'</div><div class="me-owner">'+home.owner+'</div></div></div>'
+      +'<div><div class="me-scores">'
+      +'<div class="me-score '+(hw?'win':'lose')+'">'+g.homeScore.toFixed(1)+'</div>'
+      +'<div class="me-sep">&ndash;</div>'
+      +'<div class="me-score '+(aw?'win':'lose')+'">'+g.awayScore.toFixed(1)+'</div>'
+      +'</div></div>'
+      +'<div class="me-team r"><div><div class="me-tname">'+away.name+'</div><div class="me-owner">'+away.owner+'</div></div>'+teamLogoCell(away)+'</div>'
+      +'</div>'
+      +'<div class="expand-toggle" id="lt'+mid+'" onclick="toggleLineup('+mid+')">'
+      +'<span>View Lineups &amp; Player Scores</span><span class="earrow">&#9660;</span></div>'
+      +'<div class="lineup-panel" id="lp'+mid+'"><div class="me-lineups">'
+      +lineupHtml(g.homeLineup||[], g.home)
+      +lineupHtml(g.awayLineup||[], g.away)
+      +'</div></div></div>';
   });
 
   document.getElementById('scores').innerHTML =
     '<div class="sec-header"><div><div class="sec-title">MATCH<span>UPS</span></div>'
-    + '<div class="sec-desc">2026 Season &middot; Select any week to view scores &amp; lineups</div></div></div>'
+    +'<div class="sec-desc">2026 Season &middot; Select any week to view scores &amp; lineups</div></div></div>'
     + navHtml + matchesHtml;
 }
 
-function setScoresWeek(idx) {
-  scoresWeekIdx = idx;
-  renderScores();
-}
+function setScoresWeek(idx) { scoresWeekIdx = idx; renderScores(); }
 
 // ═══════════════════════════════════════════════════════════════
 //  STANDINGS TAB
@@ -789,7 +765,7 @@ function renderStandings() {
   const th=(col,lbl)=>{
     const act=stSort.col===col?' sorted':'';
     const icon=stSort.col===col?(stSort.dir===1?'&#8595;':'&#8593;'):'&#8597;';
-    return '<th class="'+act+'" onclick="sortSt(\''+col+'\')">'+lbl+SH+icon+SE+'</th>';
+    return '<th class="'+act+'" data-sort="'+col+'" onclick="sortSt(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
   };
   let html='<div class="sec-header"><div><div class="sec-title">STAND<span>INGS</span></div>'
     +'<div class="sec-desc">Click any column to sort &middot; Top 8 teams advance to playoffs</div></div></div>'
@@ -800,29 +776,19 @@ function renderStandings() {
     +'</tr></thead><tbody>';
 
   data.forEach((t,i)=>{
-    const seed = i+1;
-    const inPlayoffs = seed <= 8;
-    const isElim = seed > 8;
-    // Cutline divider row between seed 8 and 9
+    const seed = i+1, inPlayoffs = seed<=8, isElim = seed>8;
     let divider = '';
-    if (seed === 9) {
-      divider = '<tr><td colspan="11" style="padding:0;height:0;border:none;">'
-        +'<div style="display:flex;align-items:center;gap:0.75rem;padding:0.4rem 1rem;background:rgba(245,96,74,0.06);border-top:2px dashed rgba(245,96,74,0.4);border-bottom:1px solid rgba(245,96,74,0.2);">'
+    if (seed===9) {
+      divider = '<tr><td colspan="12" style="padding:0;height:0;border:none;">'
+        +'<div style="display:flex;align-items:center;gap:0.75rem;padding:0.4rem 1rem;background:rgba(240,79,58,0.06);border-top:2px dashed rgba(240,79,58,0.4);border-bottom:1px solid rgba(240,79,58,0.2);">'
         +'<span style="font-family:Space Mono,monospace;font-size:0.58rem;color:var(--accent3);letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap">&#9660; Playoff Cutline</span>'
-        +'<div style="flex:1;height:1px;background:rgba(245,96,74,0.2)"></div>'
-        +'</div></td></tr>';
+        +'<div style="flex:1;height:1px;background:rgba(240,79,58,0.2)"></div></div></td></tr>';
     }
-
-    const rowStyle = isElim ? 'opacity:0.45;' : '';
-    const rankStyle = seed<=3 ? ' t3' : '';
-
-    let statusCell;
-    if (inPlayoffs) {
-      statusCell = '<td class="nm"><span style="font-family:Space Mono,monospace;font-size:0.62rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;background:rgba(56,232,200,0.12);color:var(--accent2);border:1px solid rgba(56,232,200,0.3);white-space:nowrap">#'+seed+' SEED</span></td>';
-    } else {
-      statusCell = '<td class="nm"><span style="font-family:Space Mono,monospace;font-size:0.62rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;background:rgba(245,96,74,0.1);color:var(--accent3);border:1px solid rgba(245,96,74,0.25);white-space:nowrap">OUT</span></td>';
-    }
-
+    const rowStyle = isElim?'opacity:0.45;':'';
+    const rankStyle = seed<=3?' t3':'';
+    const statusCell = inPlayoffs
+      ? '<td class="nm"><span style="font-family:Space Mono,monospace;font-size:0.62rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;background:rgba(45,230,184,0.12);color:var(--accent2);border:1px solid rgba(45,230,184,0.3);white-space:nowrap">#'+seed+' SEED</span></td>'
+      : '<td class="nm"><span style="font-family:Space Mono,monospace;font-size:0.62rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;background:rgba(240,79,58,0.1);color:var(--accent3);border:1px solid rgba(240,79,58,0.25);white-space:nowrap">OUT</span></td>';
     html += divider
       +'<tr style="'+rowStyle+'">'
       +'<td style="padding:0.5rem 0.75rem">'+teamLogoCell(t)+'</td>'
@@ -836,12 +802,12 @@ function renderStandings() {
       +'<td class="nm" style="color:'+(t.diff>=0?'var(--accent2)':'var(--accent3)')+'">'+( t.diff>=0?'+':'')+t.diff.toFixed(1)+'</td>'
       +'<td class="nm"><div style="display:flex;align-items:center;gap:0.5rem;justify-content:flex-end"><div class="rbar"><div class="rbar-f" style="width:'+fillPct(t.wins,t.losses)+'%"></div></div>'+pct(t.wins,t.losses)+'</div></td>'
       +'<td class="nm" style="color:'+strkCol(t.streak)+'">'+strkStr(t.streak)+'</td>'
-      +statusCell
-      +'</tr>';
+      +statusCell+'</tr>';
   });
   html+='</tbody></table></div>';
   document.getElementById('standings').innerHTML=html;
 }
+
 function sortSt(col){
   stSort.dir=stSort.col===col?stSort.dir*-1:(['rank','wins','pf'].includes(col)?-1:1);
   stSort.col=col; renderStandings();
@@ -850,7 +816,7 @@ function sortSt(col){
 // ═══════════════════════════════════════════════════════════════
 //  PLAYERS TAB
 // ═══════════════════════════════════════════════════════════════
-let plSort = { col:'pts', dir:-1 };
+let plSort    = { col:'pts', dir:-1 };
 let plFilters = { search:'', pos:'', team:'', status:'' };
 
 function renderPlayers() {
@@ -858,30 +824,23 @@ function renderPlayers() {
   let data = PLAYERS.filter(p=>{
     if(search && !p.name.toLowerCase().includes(search) && !p.school.toLowerCase().includes(search)) return false;
     if(pos && p.pos!==pos) return false;
-    if(status==='fa' && !p.fa) return false;
-    if(status==='rostered' && p.fa) return false;
     if(team==='fa'){ if(!p.fa) return false; }
     else if(team && p.ft!==+team) return false;
     return true;
   }).sort((a,b)=>{
     const {col,dir}=plSort;
-    if(col==='name')   return dir*a.name.localeCompare(b.name);
-    if(col==='school') return dir*a.school.localeCompare(b.school);
-    if(col==='pos')    return dir*a.pos.localeCompare(b.pos);
-    if(col==='team'){
-      const an=a.fa?'ZZZZZ':gt(a.ft).name;
-      const bn=b.fa?'ZZZZZ':gt(b.ft).name;
-      return dir*an.localeCompare(bn);
-    }
-    if(col==='lastWk') return dir*(a.lastWk-b.lastWk);
-    if(col==='ptsPerSet') { const aps=a.sets>0?a.pts/a.sets:0,bps=b.sets>0?b.pts/b.sets:0; return dir*(aps-bps); }
+    if(col==='name')    return dir*a.name.localeCompare(b.name);
+    if(col==='school')  return dir*a.school.localeCompare(b.school);
+    if(col==='pos')     return dir*a.pos.localeCompare(b.pos);
+    if(col==='team'){const an=a.fa?'ZZZZZ':gt(a.ft)?gt(a.ft).name:'';const bn=b.fa?'ZZZZZ':gt(b.ft)?gt(b.ft).name:'';return dir*an.localeCompare(bn);}
+    if(col==='ptsPerSet'){const aps=a.sets>0?a.pts/a.sets:0,bps=b.sets>0?b.pts/b.sets:0;return dir*(aps-bps);}
     return dir*(a[col]-b[col]);
   });
 
   const th=(col,lbl)=>{
     const act=plSort.col===col?' sorted':'';
     const icon=plSort.col===col?(plSort.dir===1?'&#8595;':'&#8593;'):'&#8597;';
-    return '<th class="'+act+'" onclick="sortPl(\''+col+'\')">'+lbl+SH+icon+SE+'</th>';
+    return '<th class="'+act+'" data-sort="'+col+'" onclick="sortPl(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
   };
 
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(plFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
@@ -892,29 +851,21 @@ function renderPlayers() {
     +'<div class="ctrl">'
     +'<input class="sbox" type="text" placeholder="Search player or school&hellip;" value="'+search+'" oninput="plFilters.search=this.value.toLowerCase();renderPlayers()">'
     +'<select class="fsel" onchange="plFilters.pos=this.value;renderPlayers()"><option value="">All Positions</option>'+posOpts+'</select>'
-    +'<select class="fsel" onchange="plFilters.team=this.value;plFilters.status=(this.value===\'fa\'?\'fa\':\'\');renderPlayers()">'
-    +'<option value="">All Teams</option>'
-    +'<option value="fa"'+(plFilters.team==='fa'?' selected':'')+'>&#9733; Free Agents</option>'
-    +teamOpts
-    +'</select>'
+    +'<select class="fsel" onchange="onTeamFilter(this.value)"><option value="">All Teams</option><option value="fa"'+(plFilters.team==='fa'?' selected':'')+'>&#9733; Free Agents</option>'+teamOpts+'</select>'
     +'</div>'
     +'<div class="swrap"><table class="stbl"><thead><tr>'
     +'<th style="width:44px"></th><th>#</th>'
-    +th('name','Player')+th('school','School')+th('pos','Pos')
-    +th('team','Fantasy Team')
+    +th('name','Player')+th('school','School')+th('pos','Pos')+th('team','Fantasy Team')
     +th('pts','FPTS')+th('ptsPerSet','FPTS/Set')+th('lastWk','Last Wk')
     +'<th style="width:28px"></th>'
     +'</tr></thead><tbody>';
 
   data.forEach((p,i)=>{
-    const teamCell = p.fa
-      ? faBadge()
-      : '<span class="oc">'+gt(p.ft).name+'</span>';
-    const lastWkColor = p.lastWk > 0 ? 'color:var(--accent2)' : '';
+    const teamCell = p.fa ? faBadge() : '<span class="oc">'+(gt(p.ft)?gt(p.ft).name:'--')+'</span>';
+    const lastWkColor = p.lastWk>0?'color:var(--accent2)':'';
     const rowId = 'prow-'+i;
-    const hitPct = p.kills > 0 ? ((p.kills - p.errors - (p.attempts > 0 ? p.attempts * 0 : 0)) / (p.attempts || 1)).toFixed(3) : '.000';
     html+=
-      '<tr class="player-main-row" onclick="togglePlayerRow(\''+rowId+'\')" style="cursor:pointer">'
+      '<tr class="player-main-row" data-rid="'+rowId+'" onclick="togglePlayerRow(this.dataset.rid)" style="cursor:pointer">'
       +'<td style="padding:0.5rem 0.75rem">'+playerPhotoCell(p)+'</td>'
       +'<td class="rc">'+(i+1)+'</td>'
       +'<td class="nc">'+p.name+'</td>'
@@ -928,69 +879,62 @@ function renderPlayers() {
       +'</tr>'
       +'<tr class="player-expand-row" id="'+rowId+'" style="display:none">'
       +'<td colspan="10" style="padding:0;border-bottom:1px solid var(--border)">'
-      +'<div class="player-stat-drawer">'
-      +'<div class="psd-grid">'
+      +'<div class="player-stat-drawer"><div class="psd-grid">'
       +'<div class="psd-stat"><div class="psd-val">'+p.kills+'</div><div class="psd-lbl">Kills</div></div>'
-      +'<div class="psd-stat"><div class="psd-val">'+(p.hitPct !== undefined ? p.hitPct : '—')+'</div><div class="psd-lbl">Hit %</div></div>'
+      +'<div class="psd-stat"><div class="psd-val">'+p.hitPct+'</div><div class="psd-lbl">Hit %</div></div>'
       +'<div class="psd-stat"><div class="psd-val">'+p.aces+'</div><div class="psd-lbl">Aces</div></div>'
       +'<div class="psd-stat"><div class="psd-val">'+p.assists+'</div><div class="psd-lbl">Assists</div></div>'
       +'<div class="psd-stat"><div class="psd-val">'+p.digs+'</div><div class="psd-lbl">Digs</div></div>'
       +'<div class="psd-stat"><div class="psd-val">'+p.blocks+'</div><div class="psd-lbl">Blocks</div></div>'
-      +'</div>'
-      +'</div>'
-      +'</td>'
-      +'</tr>';
+      +'</div></div>'
+      +'</td></tr>';
   });
   html+='</tbody></table></div>';
   document.getElementById('players').innerHTML=html;
 }
+
+function onTeamFilter(v){plFilters.team=v;plFilters.status=(v==="fa"?"fa":"");renderPlayers();}
 function sortPl(col){
   plSort.dir=plSort.col===col?plSort.dir*-1:(['pts','ptsPerSet','lastWk'].includes(col)?-1:1);
   plSort.col=col; renderPlayers();
 }
 
-function togglePlayerRow(rowId) {
-  const row   = document.getElementById(rowId);
-  const arrow = document.getElementById('arr-'+rowId);
-  if (!row) return;
-  const isOpen = row.style.display !== 'none';
-  row.style.display   = isOpen ? 'none' : 'table-row';
-  if (arrow) arrow.innerHTML = isOpen ? '&#9660;' : '&#9650;';
-}
-
 // ═══════════════════════════════════════════════════════════════
 //  DRAFT TAB
 // ═══════════════════════════════════════════════════════════════
-let draftFilters={pos:'',team:''};
-function renderDraft(){
+let draftFilters = { pos:'', team:'' };
+
+function renderDraft() {
   const {pos,team}=draftFilters;
-  const ROUNDS=10,SLOTS=10;
-  const order=[1,2,3,4,5,6,7,8,9,10];
+  const ROUNDS=10, SLOTS=10;
+  const order=TEAMS.map(t=>t.id);
   const colW='50px '+order.map(()=>'1fr').join(' ');
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(draftFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
   const posOpts=['S','OH','MB','L','OPP'].map(p=>'<option value="'+p+'"'+(draftFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
+
   let html='<div class="sec-header"><div><div class="sec-title">DRAFT <span>BOARD</span></div>'
-    +'<div class="sec-desc">Snake draft &middot; 10 rounds &middot; 10 teams &middot; Pre-season 2026</div></div></div>'
+    +'<div class="sec-desc">Snake draft &middot; '+ROUNDS+' rounds &middot; '+SLOTS+' teams &middot; Pre-season 2026</div></div></div>'
     +'<div class="ctrl">'
     +'<select class="fsel" onchange="draftFilters.pos=this.value;renderDraft()"><option value="">All Positions</option>'+posOpts+'</select>'
     +'<select class="fsel" onchange="draftFilters.team=this.value;renderDraft()"><option value="">All Teams</option>'+teamOpts+'</select>'
     +'</div><div class="dgwrap"><div class="dg">'
     +'<div class="dhr" style="grid-template-columns:'+colW+'"><div class="dhc">RD</div>'
-    +order.map(tid=>{const t=gt(tid);return '<div class="dhc" style="border-top:3px solid '+t.color+'">'+t.name.split(' ')[0]+'<br><span style="font-size:0.48rem;color:var(--muted)">'+t.owner.split(' ')[0]+'</span></div>';}).join('')
+    +order.map(tid=>{const t=gt(tid)||{};return '<div class="dhc" style="border-top:3px solid '+(t.color||'#4db8f0')+'">'+( t.name||'').split(' ')[0]+'<br><span style="font-size:0.48rem;color:var(--muted)">'+(t.owner||'').split(' ')[0]+'</span></div>';}).join('')
     +'</div>';
+
   for(let r=1;r<=ROUNDS;r++){
     const snake=r%2===0;
     html+='<div class="drr" style="grid-template-columns:'+colW+'"><div class="drl">'+r+'</div>';
     for(let s=1;s<=SLOTS;s++){
-      const ms=snake?SLOTS-s+1:s;
-      const tid=order[ms-1];
-      const pick=DRAFT_PICKS.find(p=>p.r===r&&p.t===tid);
+      const ms  = snake?SLOTS-s+1:s;
+      const tid = order[ms-1];
+      const pick= DRAFT_PICKS.find(p=>p.r===r&&p.t===tid);
       const pnum=(r-1)*SLOTS+(snake?SLOTS-s+1:s);
-      const dim=(pos&&pick&&pick.pos!==pos)||(team&&tid!==+team);
-      html+='<div class="dp'+(snake?' ss':'') +'" style="'+(dim?'opacity:0.1;':'')+'">'
+      const dim =(pos&&pick&&pick.pos!==pos)||(team&&tid!==+team);
+      html+='<div class="dp'+(snake?' ss':'')+'" style="'+(dim?'opacity:0.1;':'')+'">'
         +'<div class="dp-num">#'+pnum+'</div>'
         +(pick?'<div class="dp-name">'+pick.name+'</div><div class="dp-school">'+pick.school+'</div><div style="margin-top:2px">'+pb(pick.pos)+'</div>'
-              :'<div class="dp-school" style="color:var(--muted)">\u2014</div>')
+              :'<div class="dp-school" style="color:var(--muted)">--</div>')
         +'</div>';
     }
     html+='</div>';
@@ -1004,63 +948,57 @@ function renderDraft(){
 // ═══════════════════════════════════════════════════════════════
 function logoHtml(t){
   if(!t) return '<div class="blogo">?</div>';
-  if(t.photo) return '<div class="blogo"><img src="'+t.photo+'" alt="logo"></div>';
+  if(t.photo) return '<div class="blogo"><img src="'+t.photo+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>';
   return '<div class="blogo" style="background:'+t.color+'22;border-color:'+t.color+'44;color:'+t.color+';font-family:Bebas Neue,sans-serif;font-size:0.7rem;letter-spacing:0.04em">'+initials(t.name)+'</div>';
 }
+
 function bteamHtml(entry,winner){
-  if(!entry){
-    return '<div class="bteam tbd"><div class="blogo" style="opacity:0.2">?</div>'
-      +'<div class="binfo"><span class="bseed">TBD</span><span class="bname">TBD</span></div>'
-      +'<span class="bscore">&mdash;</span></div>';
-  }
+  if(!entry) return '<div class="bteam tbd"><div class="blogo" style="opacity:0.2">?</div><div class="binfo"><span class="bseed">TBD</span><span class="bname">TBD</span></div><span class="bscore">&mdash;</span></div>';
   const t=gt(entry.tid);
   const isW=winner!==null&&winner===entry.seed;
   const cls=winner===null?'':(isW?' win':' out');
-  return '<div class="bteam'+cls+'">'
-    +logoHtml(t)
-    +'<div class="binfo"><span class="bseed">Seed '+entry.seed+'</span><span class="bname">'+(t?t.name:'TBD')+'</span><span class="bowner">'+(t?t.owner:'')+'</span></div>'
-    +(entry.bye?'<span class="bye-tag">BYE</span>':'')
-    +'<span class="bscore'+(isW?' win':'')+'">'+( entry.score>0?entry.score.toFixed(1):'&mdash;')+'</span>'
-    +'</div>';
+  return '<div class="bteam'+cls+'">'+logoHtml(t)+'<div class="binfo"><span class="bseed">Seed '+entry.seed+'</span><span class="bname">'+(t?t.name:'TBD')+'</span><span class="bowner">'+(t?t.owner:'')+'</span></div>'+(entry.bye?'<span class="bye-tag">BYE</span>':'')+'<span class="bscore'+(isW?' win':'')+'">'+( entry.score>0?entry.score.toFixed(1):'&mdash;')+'</span></div>';
 }
+
 function matchHtml(m,isChamp){
   const cls=isChamp&&m.winner?' champ':'';
   const lbl=m.label?'<div class="bmatch-label">'+m.label+'</div>':'';
   const banner=isChamp&&m.winner?'<div class="champ-banner">&#127942;&nbsp; 2026 CHAMPION</div>':'';
   return '<div class="bmatch'+cls+'">'+banner+lbl+bteamHtml(m.teamA,m.winner)+bteamHtml(m.teamB,m.winner)+'</div>';
 }
+
 function renderPlayoffs(){
   let html='<div class="sec-header"><div><div class="sec-title">PLAYOFF <span>BRACKET</span></div>'
-    +'<div class="sec-desc">Top 8 teams &middot; Quarterfinals Wk 10 &middot; Semifinals Wk 11 &middot; Championship Wk 12</div></div></div>';
-
+    +'<div class="sec-desc">Top 8 teams qualify &middot; Quarterfinals Wk 10 &middot; Semifinals Wk 11 &middot; Championship Wk 12</div></div></div>';
   html+='<div class="pdivider">Quarterfinals &mdash; Week 10 &mdash; Seeds 1&ndash;8</div>'
     +'<div class="bracket-outer"><div class="bracket-layout"><div class="bracket-col"><div class="bcol-label">Quarterfinals (Wk 10)</div><div class="bcol-games">'
-    +PLAYOFF.qf.map(m=>matchHtml(m,false)).join('')+'</div></div></div></div>';
-
+    +(PLAYOFF.qf||[]).map(m=>matchHtml(m,false)).join('')+'</div></div></div></div>';
   html+='<div class="pdivider">Semifinals &mdash; Week 11</div>'
     +'<div class="bracket-outer"><div class="bracket-layout"><div class="bracket-col"><div class="bcol-label">Semifinals (Wk 11)</div><div class="bcol-games">'
-    +PLAYOFF.sf.map(m=>matchHtml(m,false)).join('')+'</div></div></div></div>';
-
-  const fin=PLAYOFF.final;
+    +(PLAYOFF.sf||[]).map(m=>matchHtml(m,false)).join('')+'</div></div></div></div>';
+  const fin=PLAYOFF.final||{};
   html+='<div class="pdivider">Championship &mdash; Week 12</div>'
     +'<div class="bracket-outer"><div class="bracket-layout"><div class="bracket-col" style="max-width:320px"><div class="bcol-label">Championship (Wk 12)</div><div class="bcol-games">'
     +matchHtml({...fin,label:''},true)+'</div></div></div></div>';
-
   document.getElementById('playoffs').innerHTML=html;
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  INIT
+//  RENDER ALL
 // ═══════════════════════════════════════════════════════════════
-renderTeams();
-renderScores();
-renderStandings();
-renderPlayers();
-renderDraft();
-renderPlayoffs();
-</script>
-</body>
-</html>
+function renderAll() {
+  renderTeams();
+  renderScores();
+  renderStandings();
+  renderPlayers();
+  renderDraft();
+  renderPlayoffs();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT — load from Google Sheets
+// ═══════════════════════════════════════════════════════════════
+loadAllData();
 </script>
 </body>
 </html>
