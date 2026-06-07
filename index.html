@@ -135,7 +135,7 @@ td.rc{font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--muted);wid
 td.rc.t3{color:var(--gold);font-weight:700;}
 td.nc{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:0.04em;}
 td.oc{font-size:0.74rem;color:var(--muted);}
-td.nm{font-family:'Space Mono',monospace;text-align:right;padding-right:1rem;}
+td.nm{font-family:'Space Mono',monospace;text-align:right;padding:0.85rem 1rem;}
 table.stbl thead th[style*="text-align:right"]{padding-right:1rem;}
 td.wc{color:var(--accent2);font-weight:600;text-align:right;}
 td.lc{color:var(--accent3);text-align:right;}
@@ -560,7 +560,7 @@ function buildMatchups(rows, lineupRows) {
   return Object.values(weeks).sort((a, b) => {
     const na = parseInt(a.week.replace(/\D/g,'')) || 0;
     const nb = parseInt(b.week.replace(/\D/g,'')) || 0;
-    return nb - na;
+    return na - nb;
   });
 }
 
@@ -953,10 +953,10 @@ function renderPlayers() {
       +'<td class="oc">'+p.school+'</td>'
       +'<td>'+pb(p.pos)+'</td>'
       +'<td>'+teamCell+'</td>'
-      +'<td class="nm pc">'+p.pts.toFixed(1)+'</td>'
-      +'<td class="nm" style="color:var(--muted)">'+(p.sets>0?(p.pts/p.sets).toFixed(1):'&mdash;')+'</td>'
-      +'<td class="nm" style="'+lastWkColor+'">'+p.lastWk.toFixed(1)+'</td>'
-      +'<td class="nm" style="color:var(--muted);font-size:0.7rem" id="arr-'+rowId+'">&#9660;</td>'
+      +'<td class="nm pc" style="text-align:right">'+p.pts.toFixed(1)+'</td>'
+      +'<td class="nm" style="text-align:right;color:var(--muted)">'+(p.sets>0?(p.pts/p.sets).toFixed(1):'&mdash;')+'</td>'
+      +'<td class="nm" style="text-align:right;'+(p.lastWk>0?'color:var(--accent2)':'')+'">'+p.lastWk.toFixed(1)+'</td>'
+      +'<td style="text-align:right;padding-right:0.75rem;color:var(--muted);font-size:0.7rem" id="arr-'+rowId+'">&#9660;</td>'
       +'</tr>'
       +'<tr class="player-expand-row" id="'+rowId+'" style="display:none">'
       +'<td colspan="10" style="padding:0;border-bottom:1px solid var(--border)">'
