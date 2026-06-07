@@ -31,7 +31,7 @@ body::before{
 body::after{content:'';position:fixed;right:-140px;top:50%;transform:translateY(-50%);width:520px;height:520px;pointer-events:none;z-index:0;opacity:0.03;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);border-radius:50%;}
 
 /* HEADER */
-header{z-index:10;padding:0 2rem;border-bottom:2px solid var(--border);background:linear-gradient(135deg,rgba(8,12,18,0.98),rgba(13,21,32,0.98));backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;height:76px;position:sticky;top:0;box-shadow:0 2px 24px rgba(0,0,0,0.5);position:sticky;top:0;}
+header{z-index:10;padding:0 2rem;border-bottom:2px solid var(--border);background:linear-gradient(135deg,rgba(8,12,18,0.98),rgba(13,21,32,0.98));backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;height:76px;position:sticky;top:0;box-shadow:0 2px 24px rgba(0,0,0,0.5);}
 header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),var(--accent),transparent);opacity:0.5;}
 .logo-main{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:0.06em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
 .logo-sub{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-top:0.1rem;}
@@ -48,13 +48,13 @@ nav.tabs button.active{color:var(--accent);}
 nav.tabs button.active::after{left:0;right:0;}
 
 /* MAIN */
-main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2.5rem 2rem 4rem;}
+main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1.5rem 2rem 4rem;}
 .section{display:none;}
 .section.active{display:block;animation:fadeUp 0.3s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 
 /* SEC HEADER */
-.sec-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+.sec-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:1rem;}
 .sec-title{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;letter-spacing:0.05em;line-height:1;text-shadow:0 0 40px rgba(77,184,240,0.15);}
 .sec-title span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .sec-desc{font-size:0.82rem;color:var(--muted);margin-top:0.3rem;font-style:italic;}
@@ -124,6 +124,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2.5rem 2
 table.stbl{width:100%;border-collapse:collapse;font-size:0.875rem;}
 table.stbl thead tr{background:linear-gradient(90deg,var(--surface2),rgba(13,21,32,0.8));border-bottom:2px solid var(--accent);}
 table.stbl thead th{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.13em;text-transform:uppercase;color:var(--muted);padding:0.9rem 1rem;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.15s;}
+table.stbl thead th.num-header{text-align:right;}
 table.stbl thead th:hover{color:var(--accent);}
 table.stbl thead th.sorted{color:var(--accent);}
 table.stbl thead th .si{margin-left:0.3rem;opacity:0.4;}
@@ -259,48 +260,122 @@ td.pc{color:var(--accent);font-weight:700;}
 /* LOADER SPINNER */
 .loader{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-</style>
-.player-main-row:hover{background:rgba(77,184,240,0.05);}
-.player-main-row:hover td{background:transparent;}
-.player-expand-row td{background:rgba(0,0,0,0.2);}
-.player-stat-drawer{
-  padding:0.9rem 1.25rem;
-  background:linear-gradient(180deg,rgba(0,0,0,0.25),rgba(13,21,32,0.4));
-  border-top:1px solid rgba(77,184,240,0.15);
+
+/* PLAYER STAT DRAWER */
+.player-main-row:hover td { background: rgba(77,184,240,0.04); }
+.player-expand-row > td { padding: 0 !important; border-bottom: 2px solid rgba(77,184,240,0.2); }
+
+.player-stat-drawer {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(8,16,28,0.9) 0%, rgba(13,25,45,0.95) 100%);
+  border-top: 1px solid rgba(77,184,240,0.18);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
-.psd-grid{
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:0.75rem;
+
+.psd-player-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 160px;
 }
-.psd-stat{
-  background:rgba(0,0,0,0.3);
-  border:1px solid var(--border);
-  padding:0.6rem 0.5rem;
-  text-align:center;
-  transition:border-color 0.2s;
+
+.psd-player-photo {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--surface2);
+  border: 2px solid rgba(77,184,240,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem; color: var(--muted); flex-shrink: 0; overflow: hidden;
 }
-.psd-stat:hover{border-color:rgba(77,184,240,0.3);}
-.psd-val{
-  font-family:'Space Mono',monospace;
-  font-size:1rem;
-  font-weight:700;
-  color:var(--accent);
+.psd-player-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.psd-player-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem; letter-spacing: 0.04em; line-height: 1.1;
 }
-.psd-lbl{
-  font-family:'Space Mono',monospace;
-  font-size:0.52rem;
-  color:var(--muted);
-  text-transform:uppercase;
-  letter-spacing:0.1em;
-  margin-top:0.25rem;
+.psd-player-meta {
+  font-size: 0.65rem; color: var(--muted); margin-top: 0.15rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
 }
-@media(max-width:640px){
-  .psd-grid{grid-template-columns:repeat(3,1fr);}
+
+.psd-divider {
+  width: 1px; align-self: stretch;
+  background: linear-gradient(180deg, transparent, var(--border), transparent);
+  flex-shrink: 0;
 }
-/* LOADER SPINNER */
-.loader{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+
+.psd-stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.psd-stat {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.75rem 0.5rem 0.6rem;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+.psd-stat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.psd-stat:hover {
+  border-color: rgba(77,184,240,0.4);
+  background: rgba(77,184,240,0.06);
+  transform: translateY(-2px);
+}
+.psd-stat:hover::before { opacity: 1; }
+
+.psd-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  display: block;
+}
+.psd-lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 0.35rem;
+  display: block;
+}
+
+/* Table header/cell alignment fixes */
+table.stbl thead th { text-align: center; }
+table.stbl thead th:nth-child(2),
+table.stbl thead th:nth-child(3),
+table.stbl thead th:nth-child(4),
+table.stbl thead th:nth-child(5),
+table.stbl thead th:nth-child(6) { text-align: left; }
+table.stbl tbody td.nm { text-align: center; }
+table.stbl tbody td.rc { text-align: center; }
+table.stbl tbody td.wc,
+table.stbl tbody td.lc,
+table.stbl tbody td.pc { text-align: center; }
+.rbar { margin: 0 auto; }
+
+@media(max-width: 640px) {
+  .psd-stats { grid-template-columns: repeat(3, 1fr); }
+  .player-stat-drawer { flex-direction: column; align-items: stretch; }
+  .psd-divider { width: auto; height: 1px; align-self: auto; }
+}
 </style>
 </head>
 <body>
@@ -463,7 +538,7 @@ function buildMatchups(rows, lineupRows) {
       awayScore:  num(r.awayScore),
       homeLineup: [],
       awayLineup: [],
-      playerScores:                       {},
+      playerScores: {},
     });
   });
 
@@ -762,10 +837,12 @@ function renderStandings() {
     if(col==='streak')return dir*(a.streak-b.streak);
     return dir*(a[col]-b[col]);
   });
+  const NUMERIC_COLS = ['wins','losses','pf','pa','diff','streak','rank'];
   const th=(col,lbl)=>{
     const act=stSort.col===col?' sorted':'';
     const icon=stSort.col===col?(stSort.dir===1?'&#8595;':'&#8593;'):'&#8597;';
-    return '<th class="'+act+'" data-sort="'+col+'" onclick="sortSt(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
+    const numCls=NUMERIC_COLS.includes(col)?' num-header':'';
+    return '<th class="'+act+numCls+'" data-sort="'+col+'" onclick="sortSt(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
   };
   let html='<div class="sec-header"><div><div class="sec-title">STAND<span>INGS</span></div>'
     +'<div class="sec-desc">Click any column to sort &middot; Top 8 teams advance to playoffs</div></div></div>'
@@ -837,10 +914,12 @@ function renderPlayers() {
     return dir*(a[col]-b[col]);
   });
 
+  const PL_NUMERIC = ['pts','ptsPerSet','lastWk'];
   const th=(col,lbl)=>{
     const act=plSort.col===col?' sorted':'';
     const icon=plSort.col===col?(plSort.dir===1?'&#8595;':'&#8593;'):'&#8597;';
-    return '<th class="'+act+'" data-sort="'+col+'" onclick="sortPl(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
+    const numCls=PL_NUMERIC.includes(col)?' num-header':'';
+    return '<th class="'+act+numCls+'" data-sort="'+col+'" onclick="sortPl(this.dataset.sort)">'+lbl+SH+icon+SE+'</th>';
   };
 
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(plFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
@@ -879,14 +958,25 @@ function renderPlayers() {
       +'</tr>'
       +'<tr class="player-expand-row" id="'+rowId+'" style="display:none">'
       +'<td colspan="10" style="padding:0;border-bottom:1px solid var(--border)">'
-      +'<div class="player-stat-drawer"><div class="psd-grid">'
-      +'<div class="psd-stat"><div class="psd-val">'+p.kills+'</div><div class="psd-lbl">Kills</div></div>'
-      +'<div class="psd-stat"><div class="psd-val">'+p.hitPct+'</div><div class="psd-lbl">Hit %</div></div>'
-      +'<div class="psd-stat"><div class="psd-val">'+p.aces+'</div><div class="psd-lbl">Aces</div></div>'
-      +'<div class="psd-stat"><div class="psd-val">'+p.assists+'</div><div class="psd-lbl">Assists</div></div>'
-      +'<div class="psd-stat"><div class="psd-val">'+p.digs+'</div><div class="psd-lbl">Digs</div></div>'
-      +'<div class="psd-stat"><div class="psd-val">'+p.blocks+'</div><div class="psd-lbl">Blocks</div></div>'
-      +'</div></div>'
+      +'<div class="player-stat-drawer">'
+      +'<div class="psd-player-info">'
+      +   '<div class="psd-player-photo">'+(p.photo?'<img src="'+p.photo+'" alt="">':p.name.split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0].toUpperCase();}).join(''))+'</div>'
+      +   '<div>'
+      +     '<div class="psd-player-name">'+p.name+'</div>'
+      +     '<div class="psd-player-meta">'+p.school+' &middot; '+p.pos+'</div>'
+      +     '<div style="margin-top:0.35rem">'+pb(p.pos)+'</div>'
+      +   '</div>'
+      +'</div>'
+      +'<div class="psd-divider"></div>'
+      +'<div class="psd-stats">'
+      +'<div class="psd-stat"><span class="psd-val">'+p.kills+'</span><span class="psd-lbl">Kills</span></div>'
+      +'<div class="psd-stat"><span class="psd-val">'+p.hitPct+'</span><span class="psd-lbl">Hit %</span></div>'
+      +'<div class="psd-stat"><span class="psd-val">'+p.aces+'</span><span class="psd-lbl">Aces</span></div>'
+      +'<div class="psd-stat"><span class="psd-val">'+p.assists+'</span><span class="psd-lbl">Assists</span></div>'
+      +'<div class="psd-stat"><span class="psd-val">'+p.digs+'</span><span class="psd-lbl">Digs</span></div>'
+      +'<div class="psd-stat"><span class="psd-val">'+p.blocks+'</span><span class="psd-lbl">Blocks</span></div>'
+      +'</div>'
+      +'</div>'
       +'</td></tr>';
   });
   html+='</tbody></table></div>';
