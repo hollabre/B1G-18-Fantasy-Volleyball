@@ -257,7 +257,27 @@ td.pc{color:var(--accent);font-weight:700;text-align:right;}
   .me-lineups{grid-template-columns:1fr;}
   .me-lineup:first-child{border-right:none;border-bottom:1px solid var(--border);}
 }
-/* LOADER SPINNER */
+/* B1G SCHEDULE TABLE */
+.schedule-wrap{overflow-x:auto;}
+.schedule-table{width:100%;border-collapse:collapse;font-size:0.82rem;min-width:900px;}
+.schedule-table thead tr{background:linear-gradient(90deg,var(--surface2),rgba(13,21,32,0.8));border-bottom:2px solid var(--accent);}
+.schedule-table thead th{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:0.75rem 0.6rem;text-align:center;white-space:nowrap;}
+.schedule-table thead th.team-col{text-align:left;padding-left:1rem;min-width:130px;}
+.schedule-table tbody tr{border-bottom:1px solid rgba(26,45,69,0.6);transition:background 0.15s;}
+.schedule-table tbody tr:hover{background:rgba(77,184,240,0.04);}
+.schedule-table tbody td{padding:0.65rem 0.6rem;text-align:center;white-space:nowrap;font-family:'Space Mono',monospace;}
+.schedule-table tbody td.team-name-cell{text-align:left;padding-left:1rem;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.04em;color:var(--text);}
+.games-0{color:var(--muted);opacity:0.4;}
+.games-1{color:var(--text);}
+.games-2{color:var(--accent);font-weight:700;}
+.games-3{color:var(--accent2);font-weight:700;}
+.games-4{color:var(--gold);font-weight:700;}
+.week-total-row td{background:rgba(77,184,240,0.04);border-top:1px solid rgba(77,184,240,0.2);font-size:0.7rem;color:var(--muted);padding:0.4rem 0.6rem;}
+.week-total-row td.ttl-label{text-align:left;padding-left:1rem;font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;}
+.sched-legend{display:flex;gap:1.25rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;}
+.sched-legend-item{display:flex;align-items:center;gap:0.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.08em;}
+.sched-pip{width:10px;height:10px;border-radius:2px;}
+
 .loader{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -398,6 +418,7 @@ table.stbl tbody td.pc { text-align: center; }
   <button onclick="showTab('players',this)">Players</button>
   <button onclick="showTab('draft',this)">Draft Board</button>
   <button onclick="showTab('playoffs',this)">Playoffs</button>
+  <button onclick="showTab('schedule',this)">B1G Schedule</button>
 </nav>
 
 <main>
@@ -407,6 +428,7 @@ table.stbl tbody td.pc { text-align: center; }
   <section id="players"   class="section"></section>
   <section id="draft"     class="section"></section>
   <section id="playoffs"  class="section"></section>
+  <section id="schedule"  class="section"></section>
 </main>
 
 <script>
@@ -427,15 +449,15 @@ table.stbl tbody td.pc { text-align: center; }
 //    • Draft      (columns: round, slot, teamId, playerName, school, pos)
 // ═══════════════════════════════════════════════════════════════
 
-const SHEET_ID = '1vji_YICqPCQ7OOTdmcTdr40_2YKgk6hA7S6SqUH5bpw';  // <-- paste your Google Sheet ID here
+const SHEET_ID = 'YOUR_SHEET_ID_HERE';  // <-- paste your Google Sheet ID here
 
 const SHEET_GIDS = {
   teams:    '0',        // <-- replace with GID for your Teams tab
-  players:  '991574399',  // <-- replace with GID for your Players tab
-  matchups: '375128671',  // <-- replace with GID for your Matchups tab
-  lineups:  '1674016992',  // <-- replace with GID for your Lineups tab
-  playoff:  '991284458',  // <-- replace with GID for your Playoff tab
-  draft:    '2009060021',  // <-- replace with GID for your Draft tab
+  players:  '123456',  // <-- replace with GID for your Players tab
+  matchups: '234567',  // <-- replace with GID for your Matchups tab
+  lineups:  '345678',  // <-- replace with GID for your Lineups tab
+  playoff:  '456789',  // <-- replace with GID for your Playoff tab
+  draft:    '567890',  // <-- replace with GID for your Draft tab
 };
 
 // ── Fetch a single sheet tab as parsed rows ──────────────────────
@@ -560,7 +582,7 @@ function buildMatchups(rows, lineupRows) {
   return Object.values(weeks).sort((a, b) => {
     const na = parseInt(a.week.replace(/\D/g,'')) || 0;
     const nb = parseInt(b.week.replace(/\D/g,'')) || 0;
-    return na - nb;
+    return nb - na;
   });
 }
 
@@ -622,7 +644,7 @@ async function loadAllData() {
 }
 
 function showLoadingState() {
-  document.querySelectorAll('.section').forEach(s => {
+  document.querySelectorAll('.section:not(#schedule)').forEach(s => {
     s.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;gap:1rem">'
       + '<div class="loader"></div>'
       + '<div style="font-family:Space Mono,monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Loading from Google Sheets...</div>'
@@ -633,7 +655,7 @@ function showLoadingState() {
 function hideLoadingState() {}
 
 function showError(err) {
-  document.querySelectorAll('.section').forEach(s => {
+  document.querySelectorAll('.section:not(#schedule)').forEach(s => {
     s.innerHTML = '<div style="padding:2rem;font-family:Space Mono,monospace;font-size:0.75rem;color:var(--accent3)">'
       + '<div style="font-size:1rem;margin-bottom:0.75rem">&#9888; Could not load data from Google Sheets</div>'
       + '<div style="color:var(--muted);margin-bottom:1rem">' + err.message + '</div>'
@@ -925,7 +947,7 @@ function renderPlayers() {
   };
 
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(plFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
-  const posOpts=['S','PIN','MB','DS','OPP'].map(p=>'<option value="'+p+'"'+(plFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
+  const posOpts=['S','PIN','MB','DS'].map(p=>'<option value="'+p+'"'+(plFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
 
   let html='<div class="sec-header"><div><div class="sec-title">ALL <span>PLAYERS</span></div>'
     +'<div class="sec-desc">Click any player row to expand stats &middot; Use dropdown to filter Free Agents</div></div></div>'
@@ -1088,8 +1110,97 @@ function renderAll() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  INIT — load from Google Sheets
+//  B1G SCHEDULE — games per team per week
+//  Edit the numbers below each week to update the schedule.
+//  0 = no games, 1 = 1 match, 2 = 2 matches, etc.
 // ═══════════════════════════════════════════════════════════════
+const B1G_SCHEDULE = {
+  weeks: ['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5','Wk 6','Wk 7','Wk 8','Wk 9'],
+  teams: [
+    //          Name                Wk1 Wk2 Wk3 Wk4 Wk5 Wk6 Wk7 Wk8 Wk9
+    { name: 'Illinois',      games: [ 2,  3,  3,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'Indiana',       games: [ 1,  3,  3,  2,  2,  2,  2,  2,  2 ] },
+    { name: 'Iowa',          games: [ 3,  2,  4,  4,  2,  2,  2,  2,  2 ] },
+    { name: 'Maryland',      games: [ 1,  3,  4,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'Michigan',      games: [ 2,  4,  2,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'Michigan State',games: [ 2,  3,  3,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'Minnesota',     games: [ 2,  2,  2,  2,  2,  2,  2,  2,  2 ] },
+    { name: 'Nebraska',      games: [ 2,  3,  2,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'Northwestern',  games: [ 3,  2,  4,  2,  2,  2,  2,  2,  2 ] },
+    { name: 'Ohio State',    games: [ 3,  2,  3,  2,  2,  2,  2,  2,  2 ] },
+    { name: 'Oregon',        games: [ 2,  3,  3,  2,  2,  2,  2,  2,  2 ] },
+    { name: 'Penn State',    games: [ 3,  1,  3,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'Purdue',        games: [ 1,  3,  3,  2,  2,  2,  2,  2,  2 ] },
+    { name: 'Rutgers',       games: [ 3,  2,  4,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'UCLA',          games: [ 2,  3,  3,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'USC',           games: [ 3,  2,  3,  3,  2,  2,  2,  2,  2 ] },
+    { name: 'Washington',    games: [ 3,  2,  2,  2,  2,  2,  2,  2,  2 ] },
+    { name: 'Wisconsin',     games: [ 4,  2,  2,  2,  2,  2,  2,  2,  2 ] },
+  ]
+};
+
+function renderSchedule() {
+  const { weeks, teams } = B1G_SCHEDULE;
+
+  // Calculate weekly totals (sum of all games that week)
+  const weekTotals = weeks.map((_, wi) =>
+    teams.reduce((sum, t) => sum + (t.games[wi] || 0), 0)
+  );
+
+  const gamesClass = n => {
+    if (n === 0) return 'games-0';
+    if (n === 1) return 'games-1';
+    if (n === 2) return 'games-2';
+    if (n === 3) return 'games-3';
+    return 'games-4';
+  };
+
+  let html = '<div class="sec-header"><div>'
+    + '<div class="sec-title">B1G <span>SCHEDULE</span></div>'
+    + '<div class="sec-desc">Games per Big Ten team each week of the regular season &middot; Edit in code to update</div>'
+    + '</div></div>'
+    + '<div class="sched-legend">'
+    + '<span style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Games:</span>'
+    + '<div class="sched-legend-item"><div class="sched-pip" style="background:rgba(77,184,240,0.15)"></div>0 — Bye</div>'
+    + '<div class="sched-legend-item"><div class="sched-pip" style="background:var(--text)"></div>1</div>'
+    + '<div class="sched-legend-item"><div class="sched-pip" style="background:var(--accent)"></div>2</div>'
+    + '<div class="sched-legend-item"><div class="sched-pip" style="background:var(--accent2)"></div>3</div>'
+    + '<div class="sched-legend-item"><div class="sched-pip" style="background:var(--gold)"></div>4+</div>'
+    + '</div>'
+    + '<div class="schedule-wrap"><table class="schedule-table">'
+    + '<thead><tr>'
+    + '<th class="team-col">School</th>'
+    + weeks.map(w => '<th>' + w + '</th>').join('')
+    + '<th>Total</th>'
+    + '</tr></thead><tbody>';
+
+  teams.forEach(t => {
+    const rowTotal = t.games.reduce((s, g) => s + g, 0);
+    html += '<tr>'
+      + '<td class="team-name-cell">' + t.name + '</td>'
+      + t.games.map((g, wi) =>
+          '<td class="' + gamesClass(g) + '">' + (g === 0 ? '&mdash;' : g) + '</td>'
+        ).join('')
+      + '<td style="color:var(--accent);font-weight:700">' + rowTotal + '</td>'
+      + '</tr>';
+  });
+
+  // Totals row
+  html += '<tr class="week-total-row">'
+    + '<td class="ttl-label">Week Total</td>'
+    + weekTotals.map(t => '<td>' + t + '</td>').join('')
+    + '<td>' + weekTotals.reduce((s, n) => s + n, 0) + '</td>'
+    + '</tr>';
+
+  html += '</tbody></table></div>';
+  document.getElementById('schedule').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT — Schedule renders immediately (no sheet needed)
+//         Everything else loads from Google Sheets
+// ═══════════════════════════════════════════════════════════════
+renderSchedule();
 loadAllData();
 </script>
 </body>
