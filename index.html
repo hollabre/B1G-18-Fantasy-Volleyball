@@ -565,7 +565,7 @@ function buildMatchups(rows, lineupRows) {
     const side = r.side; // 'home' or 'away'
     if (!weeks[wk] || !weeks[wk].games[gi]) return;
     const game = weeks[wk].games[gi];
-    const SLOT_ORDER = ['OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'];
+    const SLOT_ORDER = ['PIN1','PIN2','MB1','MB2','S','DS','FLEX','BN1','BN2','BN3'];
     const idx  = SLOT_ORDER.indexOf(r.slot);
     if (side === 'home') game.homeLineup[idx < 0 ? game.homeLineup.length : idx] = r.playerName;
     else                 game.awayLineup[idx < 0 ? game.awayLineup.length : idx] = r.playerName;
@@ -668,8 +668,8 @@ function showError(err) {
 const gt  = id => TEAMS.find(t => t.id === id);
 const SH  = '<span class="si">';
 const SE  = '</span>';
-const SLOT_ORDER  = ['OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'];
-const SLOT_LABELS = { OH1:'OH', OH2:'OH', MB1:'MB', MB2:'MB', S:'S', L:'L', FLEX:'FLEX', BN1:'BN', BN2:'BN', BN3:'BN' };
+const SLOT_ORDER  = ['PIN1','PIN2','MB1','MB2','S','DS','FLEX','BN1','BN2','BN3'];
+const SLOT_LABELS = { PIN1:'PIN', PIN2:'PIN', MB1:'MB', MB2:'MB', S:'S', DS:'DS', FLEX:'FLEX', BN1:'BN', BN2:'BN', BN3:'BN' };
 const BENCH_SLOTS = ['BN1','BN2','BN3'];
 
 function showTab(id, btn) {
@@ -954,7 +954,7 @@ function renderPlayers() {
   };
 
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(plFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
-  const posOpts=['S','OH','MB','L','OPP'].map(p=>'<option value="'+p+'"'+(plFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
+  const posOpts=['S','PIN','MB','DS','OPP'].map(p=>'<option value="'+p+'"'+(plFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
 
   let html='<div class="sec-header"><div><div class="sec-title">ALL <span>PLAYERS</span></div>'
     +'<div class="sec-desc">Click any player row to expand stats &middot; Use dropdown to filter Free Agents</div></div></div>'
@@ -1031,7 +1031,7 @@ function renderDraft() {
   const order=TEAMS.map(t=>t.id);
   const colW='50px '+order.map(()=>'1fr').join(' ');
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(draftFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
-  const posOpts=['S','OH','MB','L','OPP'].map(p=>'<option value="'+p+'"'+(draftFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
+  const posOpts=['S','PIN','MB','DS','OPP'].map(p=>'<option value="'+p+'"'+(draftFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
 
   let html='<div class="sec-header"><div><div class="sec-title">DRAFT <span>BOARD</span></div>'
     +'<div class="sec-desc">Snake draft &middot; '+ROUNDS+' rounds &middot; '+SLOTS+' teams &middot; Pre-season 2026</div></div></div>'
