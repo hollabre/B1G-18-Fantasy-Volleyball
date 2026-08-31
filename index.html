@@ -396,9 +396,6 @@ table.stbl tbody td.pc { text-align: center; }
   .player-stat-drawer { flex-direction: column; align-items: stretch; }
   .psd-divider { width: auto; height: 1px; align-self: auto; }
 
- .review-details[open] .read-review {
-  display: none !important;
-}
 }
 </style>
 </head>
@@ -1179,20 +1176,24 @@ if (latestReview) {
     + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
     + preview
 
-    + '<details class="review-details" style="margin-top:0.75rem">'
-+ '<summary class="read-review" style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer;list-style:none">'
-+ '▶ READ FULL SUMMARY'
-+ '</summary>'
+    + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
++ '<span>' + preview + '</span>'
 
-+ '<div class="review-full-text" style="margin-top:0.75rem">'
-+ remainingText
++ '<span id="review-rest" style="display:none"> ' + remainingText + '</span>'
+
++ '<div id="review-read-button" style="margin-top:0.75rem">'
++ '<span onclick="showFullReview()" style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
++ '▶ READ FULL REVIEW'
++ '</span>'
 + '</div>'
 
-+ '<button type="button" class="hide-review" onclick="this.parentElement.removeAttribute(\'open\')" style="display:block;background:none;border:none;padding:0.75rem 0 0 0;font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
-+ '▲ HIDE SUMMARY'
-+ '</button>'
++ '<div id="review-hide-button" style="display:none;margin-top:0.75rem">'
++ '<span onclick="hideFullReview()" style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
++ '▲ HIDE REVIEW'
++ '</span>'
++ '</div>'
 
-+ '</details>'
++ '</div>'
 
     + '</div>'
     + '</div>';
@@ -1303,7 +1304,17 @@ if (latestReview) {
 
   document.getElementById('home').innerHTML = html;
 }
+function showFullReview() {
+  document.getElementById('review-rest').style.display = 'inline';
+  document.getElementById('review-read-button').style.display = 'none';
+  document.getElementById('review-hide-button').style.display = 'block';
+}
 
+function hideFullReview() {
+  document.getElementById('review-rest').style.display = 'none';
+  document.getElementById('review-read-button').style.display = 'block';
+  document.getElementById('review-hide-button').style.display = 'none';
+}
 function renderAll() {
   renderHome();
   renderTeams();
