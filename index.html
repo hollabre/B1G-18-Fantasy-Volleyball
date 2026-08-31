@@ -1212,18 +1212,6 @@ if (latestReview) {
     + '</div>';
 }
 
-function toggleReview() {
-  const rest = document.getElementById('review-rest');
-  const button = document.getElementById('review-toggle');
-
-  if (rest.style.display === 'none') {
-    rest.style.display = 'inline';
-    button.innerHTML = '▲ HIDE REVIEW';
-  } else {
-    rest.style.display = 'none';
-    button.innerHTML = '▶ READ FULL REVIEW';
-  }
-}
   // ── TWO COLUMN: Standings + Top 5 ───────────────────────────
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">';
 
