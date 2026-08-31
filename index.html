@@ -412,7 +412,8 @@ table.stbl tbody td.pc { text-align: center; }
 </header>
 
 <nav class="tabs">
-  <button class="active" onclick="showTab('teams',this)">Teams</button>
+  <button class="active" onclick="showTab('home',this)">Home</button>
+  <button onclick="showTab('teams',this)">Teams</button>
   <button onclick="showTab('scores',this)">Scores</button>
   <button onclick="showTab('standings',this)">Standings</button>
   <button onclick="showTab('players',this)">Players</button>
@@ -422,7 +423,8 @@ table.stbl tbody td.pc { text-align: center; }
 </nav>
 
 <main>
-  <section id="teams"     class="section active"></section>
+  <section id="home"      class="section active"></section>
+  <section id="teams"     class="section"></section>
   <section id="scores"    class="section"></section>
   <section id="standings" class="section"></section>
   <section id="players"   class="section"></section>
@@ -449,7 +451,7 @@ table.stbl tbody td.pc { text-align: center; }
 //    • Draft      (columns: round, slot, teamId, playerName, school, pos)
 // ═══════════════════════════════════════════════════════════════
 
-const SHEET_ID = '1vji_YICqPCQ7OOTdmcTdr40_2YKgk6hA7S6SqUH5bpw';  // <-- paste your Google Sheet ID here
+const SHEET_ID = 'YOUR_SHEET_ID_HERE';  // <-- paste your Google Sheet ID here
 
 const SHEET_GIDS = {
   teams:    '0',        // <-- replace with GID for your Teams tab
@@ -534,8 +536,8 @@ function buildPlayers(rows) {
     ft:       num(r.fantasyTeam),
     fa:       bool(r.fa),
     slot:     r.slot || null,
-    photo:    r.photo || null,
-    pts:      num(r.pts),
+    photo:      r.photo || null,
+    schoolLogo: r.schoolLogo || null,
     lastWk:   num(r.lastWk),
     sets:     num(r.sets),
     hitPct:   r.hitPct || '.000',
@@ -571,7 +573,7 @@ function buildMatchups(rows, lineupRows) {
     const side = r.side; // 'home' or 'away'
     if (!weeks[wk] || !weeks[wk].games[gi]) return;
     const game = weeks[wk].games[gi];
-    const SLOT_ORDER = ['PIN1','PIN2','MB1','MB2','S','DS','FLEX','BN1','BN2','BN3'];
+    const SLOT_ORDER = ['OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'];
     const idx  = SLOT_ORDER.indexOf(r.slot);
     if (side === 'home') game.homeLineup[idx < 0 ? game.homeLineup.length : idx] = r.playerName;
     else                 game.awayLineup[idx < 0 ? game.awayLineup.length : idx] = r.playerName;
@@ -644,7 +646,7 @@ async function loadAllData() {
 }
 
 function showLoadingState() {
-  document.querySelectorAll('.section:not(#schedule)').forEach(s => {
+  document.querySelectorAll('.section:not(#schedule):not(#home)').forEach(s => {
     s.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;gap:1rem">'
       + '<div class="loader"></div>'
       + '<div style="font-family:Space Mono,monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Loading from Google Sheets...</div>'
@@ -655,7 +657,7 @@ function showLoadingState() {
 function hideLoadingState() {}
 
 function showError(err) {
-  document.querySelectorAll('.section:not(#schedule)').forEach(s => {
+  document.querySelectorAll('.section:not(#schedule):not(#home)').forEach(s => {
     s.innerHTML = '<div style="padding:2rem;font-family:Space Mono,monospace;font-size:0.75rem;color:var(--accent3)">'
       + '<div style="font-size:1rem;margin-bottom:0.75rem">&#9888; Could not load data from Google Sheets</div>'
       + '<div style="color:var(--muted);margin-bottom:1rem">' + err.message + '</div>'
@@ -674,8 +676,8 @@ function showError(err) {
 const gt  = id => TEAMS.find(t => t.id === id);
 const SH  = '<span class="si">';
 const SE  = '</span>';
-const SLOT_ORDER  = ['PIN1','PIN2','MB1','MB2','S','DS','FLEX','BN1','BN2','BN3'];
-const SLOT_LABELS = { PIN1:'PIN', PIN2:'PIN', MB1:'MB', MB2:'MB', S:'S', DS:'DS', FLEX:'FLEX', BN1:'BN', BN2:'BN', BN3:'BN' };
+const SLOT_ORDER  = ['OH1','OH2','MB1','MB2','S','L','FLEX','BN1','BN2','BN3'];
+const SLOT_LABELS = { OH1:'OH', OH2:'OH', MB1:'MB', MB2:'MB', S:'S', L:'L', FLEX:'FLEX', BN1:'BN', BN2:'BN', BN3:'BN' };
 const BENCH_SLOTS = ['BN1','BN2','BN3'];
 
 function showTab(id, btn) {
@@ -809,12 +811,24 @@ function renderScores() {
       const starters = SLOT_ORDER.slice(0,7).map((slot, si) => {
         const name  = lineup[si] || '&mdash;';
         const score = g.playerScores[name] !== undefined ? g.playerScores[name].toFixed(1) : '&mdash;';
-        return '<div class="me-player-row"><span class="me-slot">'+SLOT_LABELS[slot]+'</span><div><div class="me-pname">'+name+'</div></div><span class="me-ppts">'+score+'</span></div>';
+        const pdata = PLAYERS.find(pl => pl.name === name);
+        const pteam = pdata && !pdata.fa && pdata.ft ? gt(pdata.ft) : null;
+        const school = pdata ? pdata.school : '';
+        const teamDot = pteam ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+pteam.color+';margin-right:5px;flex-shrink:0"></span>' : '';
+        const schoolLogo = pdata && pdata.schoolLogo
+          ? '<img src="'+pdata.schoolLogo+'" style="width:16px;height:16px;object-fit:contain;margin-right:5px;flex-shrink:0;border-radius:2px" alt="">'
+          : '';
+        return '<div class="me-player-row"><span class="me-slot">'+SLOT_LABELS[slot]+'</span><div style="display:flex;align-items:center;gap:0;flex:1">'+teamDot+schoolLogo+'<div><div class="me-pname">'+name+'</div>'+(school?'<div style="font-size:0.6rem;color:var(--muted);letter-spacing:0.04em;margin-top:1px">'+school+'</div>':'')+'</div></div><span class="me-ppts">'+score+'</span></div>';
       }).join('');
       const bench = SLOT_ORDER.slice(7).map((slot, si) => {
         const name  = lineup[7+si] || '&mdash;';
         const score = g.playerScores[name] !== undefined ? g.playerScores[name].toFixed(1) : '&mdash;';
-        return '<div class="me-player-row bench"><span class="me-slot">BN</span><div><div class="me-pname">'+name+'</div></div><span class="me-ppts">'+score+'</span></div>';
+        const bdata = PLAYERS.find(pl => pl.name === name);
+        const bschool = bdata ? bdata.school : '';
+        const bLogo = bdata && bdata.schoolLogo
+          ? '<img src="'+bdata.schoolLogo+'" style="width:16px;height:16px;object-fit:contain;margin-right:5px;flex-shrink:0;border-radius:2px" alt="">'
+          : '';
+        return '<div class="me-player-row bench"><span class="me-slot">BN</span><div style="display:flex;align-items:center;gap:0;flex:1">'+bLogo+'<div><div class="me-pname">'+name+'</div>'+(bschool?'<div style="font-size:0.6rem;color:var(--muted);letter-spacing:0.04em;margin-top:1px">'+bschool+'</div>':'')+'</div></div><span class="me-ppts">'+score+'</span></div>';
       }).join('');
       return '<div class="me-lineup"><div class="me-lineup-title" style="color:'+(t?t.color:'var(--accent)')+'">'+( t?t.name:'Team')+'</div>'+starters+'<div class="me-bench-divider">&#9472; Bench</div>'+bench+'</div>';
     };
@@ -947,7 +961,7 @@ function renderPlayers() {
   };
 
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(plFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
-  const posOpts=['S','PIN','MB','DS'].map(p=>'<option value="'+p+'"'+(plFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
+  const posOpts=['S','OH','MB','L','OPP'].map(p=>'<option value="'+p+'"'+(plFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
 
   let html='<div class="sec-header"><div><div class="sec-title">ALL <span>PLAYERS</span></div>'
     +'<div class="sec-desc">Click any player row to expand stats &middot; Use dropdown to filter Free Agents</div></div></div>'
@@ -1024,7 +1038,7 @@ function renderDraft() {
   const order=TEAMS.map(t=>t.id);
   const colW='50px '+order.map(()=>'1fr').join(' ');
   const teamOpts=TEAMS.map(t=>'<option value="'+t.id+'"'+(draftFilters.team==t.id?' selected':'')+'>'+t.name+'</option>').join('');
-  const posOpts=['S','PIN','MB','DS'].map(p=>'<option value="'+p+'"'+(draftFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
+  const posOpts=['S','OH','MB','L','OPP'].map(p=>'<option value="'+p+'"'+(draftFilters.pos===p?' selected':'')+'>'+p+'</option>').join('');
 
   let html='<div class="sec-header"><div><div class="sec-title">DRAFT <span>BOARD</span></div>'
     +'<div class="sec-desc">Snake draft &middot; '+ROUNDS+' rounds &middot; '+SLOTS+' teams &middot; Pre-season 2026</div></div></div>'
@@ -1100,7 +1114,160 @@ function renderPlayoffs(){
 // ═══════════════════════════════════════════════════════════════
 //  RENDER ALL
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  HOME PAGE DATA — edit WEEK_REVIEWS to add your weekly blurbs
+// ═══════════════════════════════════════════════════════════════
+const WEEK_REVIEWS = [
+  {
+    week: 'Week 1',
+    date: 'Aug 21-31',
+    blurb: `Write your Week 1 recap here. How did the week go? Any upsets, standout performances, or wild scores? This is your space to recap the action for the league.`
+  },
+  // Add more weeks below as the season progresses:
+  // {
+  //   week: 'Week 2',
+  //   date: 'Sep 2026',
+  //   blurb: `Your Week 2 recap here...`
+  // },
+];
+
+function renderHome() {
+  const latestReview = WEEK_REVIEWS[WEEK_REVIEWS.length - 1] || null;
+
+  // ── Top 5 scorers last week ──────────────────────────────────
+  const top5 = [...PLAYERS]
+    .filter(p => p.lastWk > 0)
+    .sort((a, b) => b.lastWk - a.lastWk)
+    .slice(0, 5);
+
+  // ── Quick standings (sorted by wins then PF) ─────────────────
+  const standingsData = [...TEAMS]
+    .sort((a, b) => b.wins - a.wins || (b.pf - b.pa) - (a.pf - a.pa));
+
+  let html = '<div style="max-width:900px;margin:0 auto">';
+
+  // ── WEEK IN REVIEW ───────────────────────────────────────────
+  if (latestReview) {
+    html += '<div style="margin-bottom:2rem">'
+      + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem">'
+      + '<span style="display:inline-block;width:4px;height:14px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px"></span>'
+      + 'Week in Review'
+      + '</div>'
+      + '<div style="background:linear-gradient(160deg,var(--surface),var(--surface2));border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem 1.75rem;position:relative;overflow:hidden">'
+      + '<div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent)"></div>'
+      + '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">'
+      + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:0.05em">' + latestReview.week + '</div>'
+      + '<div style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em">' + latestReview.date + '</div>'
+      + '</div>'
+      + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">' + latestReview.blurb + '</div>'
+      + '</div>';
+
+    // Show older reviews collapsed if there are more
+    if (WEEK_REVIEWS.length > 1) {
+      html += '<div style="margin-top:0.5rem">';
+      WEEK_REVIEWS.slice(0, -1).reverse().forEach(r => {
+        html += '<details style="margin-top:0.5rem">'
+          + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;cursor:pointer;padding:0.5rem 0;list-style:none;display:flex;align-items:center;gap:0.5rem">'
+          + '<span style="font-size:0.65rem">&#9654;</span>' + r.week + ' &mdash; ' + r.date
+          + '</summary>'
+          + '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid rgba(77,184,240,0.3);padding:1rem 1.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);opacity:0.85;margin-top:0.35rem">' + r.blurb + '</div>'
+          + '</details>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+  } else {
+    html += '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem;margin-bottom:2rem;">'
+      + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--muted)">Week in Review</div>'
+      + '<div style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">Add your first blurb to WEEK_REVIEWS in the code to get started.</div>'
+      + '</div>';
+  }
+
+  // ── TWO COLUMN: Standings + Top 5 ───────────────────────────
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">';
+
+  // STANDINGS MINI
+  html += '<div>'
+    + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.6rem">'
+    + '<span style="display:inline-block;width:4px;height:14px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px"></span>'
+    + 'Standings'
+    + '</div>'
+    + '<div style="background:linear-gradient(160deg,var(--surface),var(--surface2));border:1px solid var(--border);overflow:hidden">'
+    + '<table style="width:100%;border-collapse:collapse;font-size:0.82rem">'
+    + '<thead><tr style="background:rgba(0,0,0,0.3);border-bottom:1px solid var(--border)">'
+    + '<th style="font-family:Space Mono,monospace;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0.6rem 0.75rem;text-align:left;width:24px">#</th>'
+    + '<th style="font-family:Space Mono,monospace;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0.6rem 0.75rem;text-align:left">Team</th>'
+    + '<th style="font-family:Space Mono,monospace;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0.6rem 0.75rem;text-align:right">W-L</th>'
+    + '<th style="font-family:Space Mono,monospace;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0.6rem 0.75rem;text-align:right">PF</th>'
+    + '</tr></thead><tbody>';
+
+  standingsData.forEach((t, i) => {
+    const seed = i + 1;
+    const inPlayoffs = seed <= 8;
+    const rowStyle = !inPlayoffs ? 'opacity:0.45;' : '';
+    const divider = seed === 9
+      ? '<tr><td colspan="4" style="padding:0;border:none"><div style="height:2px;background:rgba(240,79,58,0.3);margin:2px 0"></div></td></tr>'
+      : '';
+    html += divider + '<tr style="border-bottom:1px solid rgba(26,45,69,0.5);transition:background 0.15s;' + rowStyle + '">'
+      + '<td style="font-family:Space Mono,monospace;font-size:0.72rem;color:' + (seed<=3?'var(--gold)':'var(--muted)') + ';padding:0.6rem 0.75rem;text-align:center">' + seed + '</td>'
+      + '<td style="padding:0.6rem 0.75rem">'
+      + '<div style="display:flex;align-items:center;gap:0.5rem">'
+      + teamLogoCell(t)
+      + '<div>'
+      + '<div style="font-family:Bebas Neue,sans-serif;font-size:0.95rem;letter-spacing:0.04em;line-height:1.1">' + t.name + '</div>'
+      + '<div style="font-size:0.62rem;color:var(--muted)">' + t.owner + '</div>'
+      + '</div></div></td>'
+      + '<td style="font-family:Space Mono,monospace;font-size:0.78rem;text-align:right;padding:0.6rem 0.75rem;color:var(--accent)">' + t.wins + '-' + t.losses + '</td>'
+      + '<td style="font-family:Space Mono,monospace;font-size:0.72rem;text-align:right;padding:0.6rem 0.75rem;color:var(--muted)">' + t.pf.toFixed(0) + '</td>'
+      + '</tr>';
+  });
+
+  html += '</tbody></table></div></div>';
+
+  // TOP 5 SCORERS
+  html += '<div>'
+    + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.6rem">'
+    + '<span style="display:inline-block;width:4px;height:14px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px"></span>'
+    + 'Top 5 Last Week'
+    + '</div>';
+
+  if (top5.length === 0) {
+    html += '<div style="background:var(--surface);border:1px solid var(--border);padding:1.5rem;font-family:Space Mono,monospace;font-size:0.72rem;color:var(--muted)">No scores yet for last week.</div>';
+  } else {
+    html += '<div style="background:linear-gradient(160deg,var(--surface),var(--surface2));border:1px solid var(--border);overflow:hidden">';
+    top5.forEach((p, i) => {
+      const team = p.ft && gt(p.ft) ? gt(p.ft) : null;
+      const medals = ['&#127947;','&#129352;','&#129353;','4','5'];
+      html += '<div style="display:flex;align-items:center;gap:0.85rem;padding:0.85rem 1rem;border-bottom:1px solid rgba(26,45,69,0.5)">'
+        + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.4rem;color:' + (i===0?'var(--gold)':i===1?'rgba(200,200,220,0.7)':i===2?'rgba(180,120,80,0.8)':'var(--muted)') + ';min-width:28px;text-align:center">' + medals[i] + '</div>'
+        + playerPhotoCell(p)
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-family:Bebas Neue,sans-serif;font-size:1rem;letter-spacing:0.04em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + p.name + '</div>'
+        + '<div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.15rem">'
+        + pb(p.pos)
+        + '<span style="font-size:0.62rem;color:var(--muted)">' + p.school + '</span>'
+        + (team ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + team.color + ';margin-left:2px"></span>' : '')
+        + '</div>'
+        + '</div>'
+        + '<div style="text-align:right;flex-shrink:0">'
+        + '<div style="font-family:Space Mono,monospace;font-size:1.1rem;font-weight:700;color:var(--accent)">' + p.lastWk.toFixed(1) + '</div>'
+        + '<div style="font-size:0.55rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">pts</div>'
+        + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  html += '</div>'; // end top 5 col
+  html += '</div>'; // end two-col grid
+  html += '</div>'; // end max-width wrapper
+
+  document.getElementById('home').innerHTML = html;
+}
+
 function renderAll() {
+  renderHome();
   renderTeams();
   renderScores();
   renderStandings();
@@ -1197,9 +1364,10 @@ function renderSchedule() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  INIT — Schedule renders immediately (no sheet needed)
+//  INIT — Home + Schedule render immediately (no sheet needed)
 //         Everything else loads from Google Sheets
 // ═══════════════════════════════════════════════════════════════
+renderHome();
 renderSchedule();
 loadAllData();
 </script>
