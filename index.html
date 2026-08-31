@@ -1139,6 +1139,17 @@ const WEEK_REVIEWS = [
 function renderHome() {
   const latestReview = WEEK_REVIEWS[WEEK_REVIEWS.length - 1] || null;
 
+  const colorTeamNames = text => {
+  TEAMS.forEach(team => {
+    const escapedName = team.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp('<strong>(' + escapedName + ')</strong>', 'g');
+    text = text.replace(
+      regex,
+      '<strong style="font-weight:900;color:' + team.color + '">$1</strong>'
+    );
+  });
+  return text;
+};
   // ── Top 5 scorers last week ──────────────────────────────────
   const top5 = [...PLAYERS]
     .filter(p => p.lastWk > 0)
@@ -1157,7 +1168,10 @@ if (latestReview) {
   // Get the first sentence for the collapsed preview
   const sentenceMatch = latestReview.blurb.match(/^.*?[.!?](?:\s|$)/);
   const preview = sentenceMatch ? sentenceMatch[0].trim() : latestReview.blurb;
-  const remainingText = latestReview.blurb.slice(preview.length).trim();
+const remainingText = latestReview.blurb.slice(preview.length).trim();
+
+const coloredPreview = colorTeamNames(preview);
+const coloredRemainingText = colorTeamNames(remainingText);
 
   html += '<div style="margin-bottom:2rem">'
     + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem">'
@@ -1178,10 +1192,10 @@ if (latestReview) {
     + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
 
     // First sentence — always visible
-    + '<span>' + preview + '</span>'
+    + '<span>' + coloredPreview + '</span>'
 
     // Everything after first sentence — hidden initially
-    + '<span id="review-rest" style="display:none"> ' + remainingText + '</span>'
+    + '<span id="review-rest" style="display:none"> ' + coloredRemainingText + '</span>'
 
     + '</div>'
 
