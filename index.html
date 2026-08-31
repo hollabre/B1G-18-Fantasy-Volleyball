@@ -1147,7 +1147,7 @@ function renderHome() {
 
   let html = '<div style="max-width:900px;margin:0 auto">';
 
-  // ── WEEK IN REVIEW ───────────────────────────────────────────
+ // ── WEEK IN REVIEW ───────────────────────────────────────────
 if (latestReview) {
 
   // Get the first sentence for the collapsed preview
@@ -1170,20 +1170,21 @@ if (latestReview) {
     + '<div style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em">' + latestReview.date + '</div>'
     + '</div>'
 
-    // First sentence
     + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
-    + '<span>' + preview + '</span>'
+    + preview
 
-    // Remaining review, initially hidden
-    + '<span id="review-rest" style="display:none"> ' + remainingText + '</span>'
+    + '<details style="margin-top:0.75rem">'
+    + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer;list-style:none">'
+    + '▶ READ FULL REVIEW'
+    + '</summary>'
 
+    + '<div style="margin-top:0.75rem">'
+    + remainingText
     + '</div>'
 
-    // Read full review / hide review button
-    + '<button id="review-toggle" onclick="toggleReview()" style="background:none;border:none;padding:0.75rem 0 0 0;font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
-    + '▶ READ FULL REVIEW'
-    + '</button>'
+    + '</details>'
 
+    + '</div>'
     + '</div>';
 
   // Show older reviews collapsed if there are more
@@ -1205,12 +1206,11 @@ if (latestReview) {
   html += '</div>';
 
 } else {
-    html += '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem;margin-bottom:2rem;">'
-      + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--muted)">Week in Review</div>'
-      + '<div style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">Add your first blurb to WEEK_REVIEWS in the code to get started.</div>'
-      + '</div>';
-  }
-
+  html += '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem;margin-bottom:2rem;">'
+    + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--muted)">Week in Review</div>'
+    + '<div style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">Add your first blurb to WEEK_REVIEWS in the code to get started.</div>'
+    + '</div>';
+}
 
 function toggleReview() {
   const rest = document.getElementById('review-rest');
