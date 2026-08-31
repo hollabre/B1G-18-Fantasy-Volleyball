@@ -1122,7 +1122,7 @@ const WEEK_REVIEWS = [
   {
     week: 'Week 1',
     date: 'Aug 21-31',
-    blurb: `Year 3 of the Big 18 Fantasy Volleyball kicks off with some high-flying non-conference action, bringing tears to the eyes of millions watching in adoration of the true trailblazer sport of College Fantasy Volleyball, based around only Big Ten players made by someone who clealy has too much free time. This season promises to be the best yet, as we are revamping here at BTN Corp. We have a website! One where I can publicly post these dumb reviews that I write at midnight when I should be sleeping. And one that hopefully makes everything feel super legit. Let me know if there's something missing that you want me to add! We also had our first in-person draft! Everything is starting to feel legit, and I think ESPN 8 the Ocho might have some competition in the near future. But I digress. Thank you again to everyone who continues to join and be a part of this. I'm fan-forward, and I always hope that shows. But enough of this self-indulgent wattpad-esque slop, let's actually review the week, shall we? <strong>Chat B1G</strong> ushers in the season with the top score. And you might be thinking, "well duh, they've got Kennedy Martin on her team, of course they have the top score! Not so fast, as` 
+    blurb: `Year 3 of the Big 18 Fantasy Volleyball kicks off with some high-flying non-conference action, bringing tears to the eyes of millions watching in adoration of the true trailblazer sport of Fantasy College Volleyball, based around only Big Ten players made by someone who clealy has too much free time. This season promises to be the best yet, as we are revamping here at BTN Corp. We have a website! One where I can publicly post these dumb reviews that I write at midnight when I should be sleeping. And one that hopefully makes everything feel super legit. Let me know if there's something missing that you want me to add! We also had our first in-person draft! Everything is starting to feel legit, and I think ESPN 8 the Ocho might have some competition in the near future. But I digress. Thank you again to everyone who continues to join and be a part of this. I'm fan-forward, and I always hope that shows. But enough of this self-indulgent wattpad-esque slop, let's actually review the week, shall we? <strong>Chat B1G</strong> ushers in the season with the top score. And you might be thinking, "well duh, they've got Kennedy Martin on her team, of course they have the top score! Not so fast, as` 
   },
   // Add more weeks below as the season progresses:
   // {
@@ -1148,37 +1148,67 @@ function renderHome() {
   let html = '<div style="max-width:900px;margin:0 auto">';
 
   // ── WEEK IN REVIEW ───────────────────────────────────────────
-  if (latestReview) {
-    html += '<div style="margin-bottom:2rem">'
-      + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem">'
-      + '<span style="display:inline-block;width:4px;height:14px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px"></span>'
-      + 'Week in Review'
-      + '</div>'
-      + '<div style="background:linear-gradient(160deg,var(--surface),var(--surface2));border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem 1.75rem;position:relative;overflow:hidden">'
-      + '<div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent)"></div>'
-      + '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">'
-      + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:0.05em">' + latestReview.week + '</div>'
-      + '<div style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em">' + latestReview.date + '</div>'
-      + '</div>'
-      + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">' + latestReview.blurb + '</div>'
-      + '</div>';
+if (latestReview) {
 
-    // Show older reviews collapsed if there are more
-    if (WEEK_REVIEWS.length > 1) {
-      html += '<div style="margin-top:0.5rem">';
-      WEEK_REVIEWS.slice(0, -1).reverse().forEach(r => {
-        html += '<details style="margin-top:0.5rem">'
-          + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;cursor:pointer;padding:0.5rem 0;list-style:none;display:flex;align-items:center;gap:0.5rem">'
-          + '<span style="font-size:0.65rem">&#9654;</span>' + r.week + ' &mdash; ' + r.date
-          + '</summary>'
-          + '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid rgba(77,184,240,0.3);padding:1rem 1.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);opacity:0.85;margin-top:0.35rem">' + r.blurb + '</div>'
-          + '</details>';
-      });
-      html += '</div>';
-    }
+  // Show only the first 2 sentences as the preview
+  const sentences = latestReview.blurb.match(/.*?[.!?](?:\s|$)/g) || [latestReview.blurb];
+  const preview = sentences.slice(0, 2).join('').trim();
+  const needsExpand = preview !== latestReview.blurb;
+
+  html += '<div style="margin-bottom:2rem">'
+    + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem">'
+    + '<span style="display:inline-block;width:4px;height:14px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px"></span>'
+    + 'Week in Review'
+    + '</div>'
+
+    + '<div style="background:linear-gradient(160deg,var(--surface),var(--surface2));border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem 1.75rem;position:relative;overflow:hidden">'
+
+    + '<div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent)"></div>'
+
+    + '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">'
+    + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:0.05em">' + latestReview.week + '</div>'
+    + '<div style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em">' + latestReview.date + '</div>'
+    + '</div>'
+
+    // First two sentences
+    + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
+    + preview
+    + (needsExpand ? '...' : '')
+    + '</div>'
+
+    // Full review dropdown
+    + (needsExpand ?
+      '<details style="margin-top:0.75rem">'
+      + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer;padding:0.5rem 0;list-style:none;display:flex;align-items:center;gap:0.5rem">'
+      + '<span style="font-size:0.65rem">&#9654;</span> READ FULL REVIEW'
+      + '</summary>'
+      + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9;margin-top:0.5rem">'
+      + latestReview.blurb
+      + '</div>'
+      + '</details>'
+      : '')
+
+    + '</div>';
+
+  // Show older reviews collapsed if there are more
+  if (WEEK_REVIEWS.length > 1) {
+    html += '<div style="margin-top:0.5rem">';
+
+    WEEK_REVIEWS.slice(0, -1).reverse().forEach(r => {
+      html += '<details style="margin-top:0.5rem">'
+        + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;cursor:pointer;padding:0.5rem 0;list-style:none;display:flex;align-items:center;gap:0.5rem">'
+        + '<span style="font-size:0.65rem">&#9654;</span>' + r.week + ' &mdash; ' + r.date
+        + '</summary>'
+        + '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid rgba(77,184,240,0.3);padding:1rem 1.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);opacity:0.85;margin-top:0.35rem">' + r.blurb + '</div>'
+        + '</details>';
+    });
 
     html += '</div>';
-  } else {
+  }
+
+  html += '</div>';
+
+} else {
     html += '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem;margin-bottom:2rem;">'
       + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--muted)">Week in Review</div>'
       + '<div style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">Add your first blurb to WEEK_REVIEWS in the code to get started.</div>'
