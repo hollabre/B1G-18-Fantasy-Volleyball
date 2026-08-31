@@ -825,12 +825,13 @@ function renderScores() {
       const bench = SLOT_ORDER.slice(7).map((slot, si) => {
         const name  = lineup[7+si] || '&mdash;';
         const score = g.playerScores[name] !== undefined ? g.playerScores[name].toFixed(1) : '&mdash;';
-        const bdata = PLAYERS.find(pl => pl.name === name);
-        const bschool = bdata ? bdata.school : '';
+       const bdata = PLAYERS.find(pl => pl.name === name);
+const bschool = bdata ? bdata.school : '';
+const bpos = bdata ? bdata.pos : '';
         const bLogo = bdata && bdata.schoolLogo
           ? '<img src="'+bdata.schoolLogo+'" style="width:16px;height:16px;object-fit:contain;margin-right:5px;flex-shrink:0;border-radius:2px" alt="">'
           : '';
-        return '<div class="me-player-row bench"><span class="me-slot">BN</span><div style="display:flex;align-items:center;gap:0;flex:1">'+bLogo+'<div><div class="me-pname">'+name+'</div>'+(bschool?'<div style="font-size:0.6rem;color:var(--muted);letter-spacing:0.04em;margin-top:1px">'+bschool+'</div>':'')+'</div></div><span class="me-ppts">'+score+'</span></div>';
+        return '<div class="me-player-row bench"><span class="me-slot">BN</span><div style="display:flex;align-items:center;gap:0;flex:1">'+bLogo+'<div><div class="me-pname">'+name+'</div>'+(bschool?'<div style="font-size:0.6rem;color:var(--muted);letter-spacing:0.04em;margin-top:1px">'+bschool+(bpos?' · '+bpos:'')+'</div>':'')+'</div></div><span class="me-ppts">'+score+'</span></div>';
       }).join('');
       return '<div class="me-lineup"><div class="me-lineup-title" style="color:'+(t?t.color:'var(--accent)')+'">'+( t?t.name:'Team')+'</div>'+starters+'<div class="me-bench-divider">&#9472; Bench</div>'+bench+'</div>';
     };
@@ -1123,7 +1124,7 @@ const WEEK_REVIEWS = [
   {
     week: 'Week 1',
     date: 'Aug 21-31',
-    blurb: `Year 3 of the Big 18 Fantasy Volleyball kicks off with some high-flying non-conference action, bringing tears to the eyes of millions watching in adoration of the true trailblazer sport of Fantasy College Volleyball, based around only Big Ten players made by someone who clealy has too much free time. This season promises to be the best yet. We actually have a website! One where I can publicly post these dumb reviews that I write at midnight when I should be sleeping! And one that hopefully makes everything feel super legit. We also had our first in-person draft! Thank you again to everyone who continues to join and be a part of this. But enough of this self-indulgent wattpad-esque slop, let's actually review the week, shall we? 
+    blurb: `Year 3 of the Big 18 Fantasy Volleyball kicks off with some high-flying non-conference action, bringing tears to the eyes of millions watching in adoration of the true trailblazer sport of Fantasy College Volleyball, based around only Big Ten players made by someone who clealy has too much free time. This season promises to be the best yet. We actually have a website! One where I can publicly post these dumb reviews that I write at midnight when I should be sleeping! And one that hopefully makes everything feel super legit. We also had our first in-person draft! Thank you again to everyone who continues to join and be a part of this. But enough of this self-indulgent slop, let's actually review the week, shall we? 
     <br><br>
     <strong>Chat B1G</strong> ushers in the season with the top score. And you might be thinking, "well duh, they've got Kennedy Martin on her team, of course they have the top score! Not so fast, as they also had the top setter and overall player of the week in <strong>Mia Tuman</strong>. Even if <strong>The Exterminators</strong> put up much of a fight, no other team was even within 300 points. AI really is getting better and better
     <br><br>
@@ -1133,7 +1134,7 @@ const WEEK_REVIEWS = [
     <br><br>
     <strong>Dinks, Dumps & Dimes</strong> defeated their work husband and proved they had the superior AI logo in another tightly contested match. It's even funnier to note that <strong>Kev</strong> would have won by 1 point if they had started the correct Minnesota DS/Libero, which just goes to show that studying is important, and you shouldn't just rely on projections.
     <br><br>
-    Overall a great first week that promises exciting matchups and results in the future! Thanks all
+    Overall a great first week that promises exciting matchups and results in the future! Thanks all!
     <br><br><br>
     - Commish`
   },
@@ -1164,9 +1165,11 @@ function renderHome() {
 if (latestReview) {
 
   // Get the first sentence for the collapsed preview
-  const sentenceMatch = latestReview.blurb.match(/^.*?[.!?](?:\s|$)/);
-  const preview = sentenceMatch ? sentenceMatch[0].trim() : latestReview.blurb;
-  const remainingText = latestReview.blurb.slice(preview.length).trim();
+const sentenceMatch = latestReview.blurb.match(/^.*?[.!?](?:\s|$)/);
+const preview = sentenceMatch ? sentenceMatch[0] : latestReview.blurb;
+const remainingText = sentenceMatch
+  ? latestReview.blurb.slice(sentenceMatch[0].length).trim()
+  : '';
 
   html += '<div style="margin-bottom:2rem">'
     + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem">'
