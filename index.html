@@ -1150,10 +1150,10 @@ function renderHome() {
   // ── WEEK IN REVIEW ───────────────────────────────────────────
 if (latestReview) {
 
-  // Show only the first 2 sentences as the preview
-  const sentences = latestReview.blurb.match(/.*?[.!?](?:\s|$)/g) || [latestReview.blurb];
-  const preview = sentences.slice(0, 2).join('').trim();
-  const needsExpand = preview !== latestReview.blurb;
+  // Get the first sentence for the collapsed preview
+  const sentenceMatch = latestReview.blurb.match(/^.*?[.!?](?:\s|$)/);
+  const preview = sentenceMatch ? sentenceMatch[0].trim() : latestReview.blurb;
+  const remainingText = latestReview.blurb.slice(preview.length).trim();
 
   html += '<div style="margin-bottom:2rem">'
     + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem">'
@@ -1170,23 +1170,19 @@ if (latestReview) {
     + '<div style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em">' + latestReview.date + '</div>'
     + '</div>'
 
-    // First two sentences
+    // First sentence
     + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
-    + preview
-    + (needsExpand ? '...' : '')
+    + '<span>' + preview + '</span>'
+
+    // Remaining review, initially hidden
+    + '<span id="review-rest" style="display:none"> ' + remainingText + '</span>'
+
     + '</div>'
 
-    // Full review dropdown
-    + (needsExpand ?
-      '<details style="margin-top:0.75rem">'
-      + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer;padding:0.5rem 0;list-style:none;display:flex;align-items:center;gap:0.5rem">'
-      + '<span style="font-size:0.65rem">&#9654;</span> READ FULL REVIEW'
-      + '</summary>'
-      + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9;margin-top:0.5rem">'
-      + latestReview.blurb
-      + '</div>'
-      + '</details>'
-      : '')
+    // Read full review / hide review button
+    + '<button id="review-toggle" onclick="toggleReview()" style="background:none;border:none;padding:0.75rem 0 0 0;font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
+    + '▶ READ FULL REVIEW'
+    + '</button>'
 
     + '</div>';
 
@@ -1214,7 +1210,18 @@ if (latestReview) {
       + '<div style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">Add your first blurb to WEEK_REVIEWS in the code to get started.</div>'
       + '</div>';
   }
+function toggleReview() {
+  const rest = document.getElementById('review-rest');
+  const button = document.getElementById('review-toggle');
 
+  if (rest.style.display === 'none') {
+    rest.style.display = 'inline';
+    button.innerHTML = '▲ HIDE REVIEW';
+  } else {
+    rest.style.display = 'none';
+    button.innerHTML = '▶ READ FULL REVIEW';
+  }
+}
   // ── TWO COLUMN: Standings + Top 5 ───────────────────────────
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">';
 
