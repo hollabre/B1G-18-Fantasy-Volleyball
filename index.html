@@ -1125,13 +1125,17 @@ const WEEK_REVIEWS = [
     date: 'Aug 21-31',
     blurb: `Year 3 of the Big 18 Fantasy Volleyball kicks off with some high-flying non-conference action, bringing tears to the eyes of millions watching in adoration of the true trailblazer sport of Fantasy College Volleyball, based around only Big Ten players made by someone who clealy has too much free time. This season promises to be the best yet. We actually have a website! One where I can publicly post these dumb reviews that I write at midnight when I should be sleeping! And one that hopefully makes everything feel super legit. We also had our first in-person draft! Thank you again to everyone who continues to join and be a part of this. But enough of this self-indulgent wattpad-esque slop, let's actually review the week, shall we? 
     <br><br>
-    <strong>Chat B1G</strong> ushers in the season with the top score. And you might be thinking, "well duh, they've got Kennedy Martin on her team, of course they have the top score! Not so fast, as they also had the top setter and overall player of the week in <strong>Mia Tuman<strong>. Even if <strong>The Exterminators<strong> put up much of a fight, no other team was even within 300 points. AI really is getting better and better
+    <strong>Chat B1G</strong> ushers in the season with the top score. And you might be thinking, "well duh, they've got Kennedy Martin on her team, of course they have the top score! Not so fast, as they also had the top setter and overall player of the week in <strong>Mia Tuman</strong>. Even if <strong>The Exterminators</strong> put up much of a fight, no other team was even within 300 points. AI really is getting better and better
     <br><br>
-    Always a contender, <strong>Sheffield's Terrace Trolls<strong> put up the 2nd highest score of the week behind the back of another underrated Hawkeye in Hannah Whittingstall. That being said, it wasn't an easy win, as <strong>B1G Ballers<strong> were right there. A couple unfortunate sidelinings didn't help in fantasy, but I'd be remissed to not mention the obvious, with Boilermaker Kenna Wollard having circumstances far more important than this game. Sending thoughts and strength to those affected.
+    Always a contender, <strong>Sheffield's Terrace Trolls</strong> put up the 2nd highest score of the week behind the back of another underrated Hawkeye in Hannah Whittingstall. That being said, it wasn't an easy win, as <strong>B1G Ballers</strong> were right there. A couple unfortunate sidelinings didn't help in fantasy, but I'd be remissed to not mention the obvious, with Boilermaker Kenna Wollard having circumstances far more important than this game. Sending thoughts and strength to those affected.
     <br><br>
-    Anyway, no real great way to segue into the rest of this, so I'll just start I guess. <strong>West Coast Hoosiers<strong> put up the next highest score with the strength of two Bruins leading the way. Maybe Alfee was holding them back after all. A potentially scary injury to first round selection Grace Heaney wasn't enough to stop the sun from shining on this Indiana boy. It helped <strong>Serves You Right<strong> put up the lowest score of the week, so welcome to the league Annie, Sue & Larry! Hope you enjoy your stay!
+    Anyway, no real great way to segue into the rest of this, so I'll just start I guess. <strong>West Coast Hoosiers</strong> put up the next highest score with the strength of two Bruins leading the way. Maybe Alfee was holding them back after all. A potentially scary injury to first round selection Grace Heaney wasn't enough to stop the sun from shining on this Indiana boy. It helped <strong>Serves You Right</strong> put up the lowest score of the week, so welcome to the league Annie, Sue & Larry! Hope you enjoy your stay!
     <br><br>
-    <strong>Dinks, Dumps & Dimes<strong> defeated their work husband and proved they had the superior AI logo in another tightly contested match. It's even funnier to note that <strong>Kev<strong> would have won by 1 point if they had started the correct Minnesota DS/Libero, which just goes to show that studying is important, and you shouldn't just rely on projections.`
+    <strong>Dinks, Dumps & Dimes</strong> defeated their work husband and proved they had the superior AI logo in another tightly contested match. It's even funnier to note that <strong>Kev</strong> would have won by 1 point if they had started the correct Minnesota DS/Libero, which just goes to show that studying is important, and you shouldn't just rely on projections.
+    <br><br>
+    Overall a great first week that promises exciting matchups and results in the future! Thanks all
+    <br><br><br>
+    - Commish`
   },
   // Add more weeks below as the season progresses:
   // {
@@ -1183,9 +1187,9 @@ if (latestReview) {
     + preview
 
     + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
-+ '<span>' + preview + '</span>'
++ '<span>' + formatReviewText(preview) + '</span>'
 
-+ '<span id="review-rest" style="display:none"> ' + remainingText + '</span>'
++ '<span id="review-rest" style="display:none"> ' + formatReviewText(remainingText) + '</span>'
 
 + '<div id="review-read-button" style="margin-top:0.75rem">'
 + '<span onclick="showFullReview()" style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
@@ -1309,6 +1313,19 @@ if (latestReview) {
   html += '</div>'; // end max-width wrapper
 
   document.getElementById('home').innerHTML = html;
+}
+  function formatReviewText(text) {
+  return text.replace(/<strong>(.*?)<\/strong>/g, (match, textInside) => {
+    const team = TEAMS.find(
+      t => t.name.toLowerCase() === textInside.trim().toLowerCase()
+    );
+
+    if (team) {
+      return '<strong style="font-weight:900;color:' + team.color + '">' + textInside + '</strong>';
+    }
+
+    return match;
+  });
 }
 function showFullReview() {
   document.getElementById('review-rest').style.display = 'inline';
