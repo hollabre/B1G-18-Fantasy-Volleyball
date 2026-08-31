@@ -1151,15 +1151,13 @@ function renderHome() {
 
   let html = '<div style="max-width:900px;margin:0 auto">';
 
- // ── WEEK IN REVIEW ───────────────────────────────────────────
+// ── WEEK IN REVIEW ───────────────────────────────────────────
 if (latestReview) {
 
   // Get the first sentence for the collapsed preview
-const sentenceMatch = latestReview.blurb.match(/^.*?[.!?](?:\s|$)/);
-const preview = sentenceMatch ? sentenceMatch[0] : latestReview.blurb;
-const remainingText = sentenceMatch
-  ? latestReview.blurb.slice(sentenceMatch[0].length).trim()
-  : '';
+  const sentenceMatch = latestReview.blurb.match(/^.*?[.!?](?:\s|$)/);
+  const preview = sentenceMatch ? sentenceMatch[0].trim() : latestReview.blurb;
+  const remainingText = latestReview.blurb.slice(preview.length).trim();
 
   html += '<div style="margin-bottom:2rem">'
     + '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem">'
@@ -1176,32 +1174,26 @@ const remainingText = sentenceMatch
     + '<div style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em">' + latestReview.date + '</div>'
     + '</div>'
 
+    // Review text
     + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
-    + preview
 
-    + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
-+ '<span>' + formatReviewText(preview) + '</span>'
+    // First sentence — always visible
+    + '<span>' + preview + '</span>'
 
-+ '<span id="review-rest" style="display:none"> ' + formatReviewText(remainingText) + '</span>'
-
-+ '<div id="review-read-button" style="margin-top:0.75rem">'
-+ '<span onclick="showFullReview()" style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
-+ '▶ READ FULL SUMMARY'
-+ '</span>'
-+ '</div>'
-
-+ '<div id="review-hide-button" style="display:none;margin-top:0.75rem">'
-+ '<span onclick="hideFullReview()" style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
-+ '▲ HIDE SUMMARY'
-+ '</span>'
-+ '</div>'
-
-+ '</div>'
+    // Everything after first sentence — hidden initially
+    + '<span id="review-rest" style="display:none"> ' + remainingText + '</span>'
 
     + '</div>'
+
+    // Toggle button
+    + '<button id="review-toggle" onclick="toggleReview()" '
+    + 'style="background:none;border:none;padding:0.75rem 0 0 0;font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer">'
+    + '▶ READ FULL REVIEW'
+    + '</button>'
+
     + '</div>';
 
-  // Show older reviews collapsed if there are more
+  // Older reviews
   if (WEEK_REVIEWS.length > 1) {
     html += '<div style="margin-top:0.5rem">';
 
@@ -1210,7 +1202,9 @@ const remainingText = sentenceMatch
         + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;cursor:pointer;padding:0.5rem 0;list-style:none;display:flex;align-items:center;gap:0.5rem">'
         + '<span style="font-size:0.65rem">&#9654;</span>' + r.week + ' &mdash; ' + r.date
         + '</summary>'
-        + '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid rgba(77,184,240,0.3);padding:1rem 1.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);opacity:0.85;margin-top:0.35rem">' + r.blurb + '</div>'
+        + '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid rgba(77,184,240,0.3);padding:1rem 1.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);opacity:0.85;margin-top:0.35rem">'
+        + r.blurb
+        + '</div>'
         + '</details>';
     });
 
@@ -1220,6 +1214,7 @@ const remainingText = sentenceMatch
   html += '</div>';
 
 } else {
+
   html += '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem;margin-bottom:2rem;">'
     + '<div style="font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--muted)">Week in Review</div>'
     + '<div style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">Add your first blurb to WEEK_REVIEWS in the code to get started.</div>'
@@ -1330,6 +1325,20 @@ function hideFullReview() {
   document.getElementById('review-rest').style.display = 'none';
   document.getElementById('review-read-button').style.display = 'block';
   document.getElementById('review-hide-button').style.display = 'none';
+}
+  function toggleReview() {
+  const rest = document.getElementById('review-rest');
+  const button = document.getElementById('review-toggle');
+
+  if (!rest || !button) return;
+
+  if (rest.style.display === 'none') {
+    rest.style.display = 'inline';
+    button.innerHTML = '▲ HIDE REVIEW';
+  } else {
+    rest.style.display = 'none';
+    button.innerHTML = '▶ READ FULL REVIEW';
+  }
 }
 function renderAll() {
   renderHome();
