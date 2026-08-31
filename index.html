@@ -395,6 +395,17 @@ table.stbl tbody td.pc { text-align: center; }
   .psd-stats { grid-template-columns: repeat(3, 1fr); }
   .player-stat-drawer { flex-direction: column; align-items: stretch; }
   .psd-divider { width: auto; height: 1px; align-self: auto; }
+  .review-details .hide-review {
+  display: none;
+}
+
+.review-details[open] .read-review {
+  display: none;
+}
+
+.review-details[open] .hide-review {
+  display: block;
+}
 }
 </style>
 </head>
@@ -1173,16 +1184,17 @@ if (latestReview) {
     + '<div style="font-size:0.92rem;line-height:1.75;color:var(--text);opacity:0.9">'
     + preview
 
-    + '<details style="margin-top:0.75rem">'
-    + '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer;list-style:none">'
-    + '▶ READ FULL REVIEW'
-    + '</summary>'
+    + '<details class="review-details" style="margin-top:0.75rem">'
++ '<summary style="font-family:Space Mono,monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.1em;cursor:pointer;list-style:none">'
++ '<span class="read-review">▶ READ FULL REVIEW</span>'
++ '<span class="hide-review">▲ HIDE REVIEW</span>'
++ '</summary>'
 
-    + '<div style="margin-top:0.75rem">'
-    + remainingText
-    + '</div>'
++ '<div class="review-full-text" style="margin-top:0.75rem">'
++ remainingText
++ '</div>'
 
-    + '</details>'
++ '</details>'
 
     + '</div>'
     + '</div>';
