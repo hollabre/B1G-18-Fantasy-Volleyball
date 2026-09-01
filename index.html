@@ -856,6 +856,82 @@ table.stbl tbody td.pc { text-align: center; }
   }
 }
 
+
+/* =========================================================
+   SCORES — PHONE-ONLY SCORECARD
+   Teams stack vertically and each score sits directly beside
+   the corresponding team.
+   ========================================================= */
+@media (max-width: 640px) {
+  #scores .me-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.7rem 0.85rem;
+  }
+
+  #scores .me-team,
+  #scores .me-team.r {
+    width: 100%;
+    min-width: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+    gap: 0.65rem;
+    padding: 0.4rem 0;
+  }
+
+  /* Away team uses the same left-to-right layout on phones. */
+  #scores .me-team.r {
+    flex-direction: row;
+  }
+
+  #scores .me-team > div,
+  #scores .me-team.r > div {
+    min-width: 0;
+  }
+
+  #scores .me-tname {
+    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #scores .me-owner {
+    font-size: 0.55rem;
+  }
+
+  /* Hide the old centered "score - score" display. */
+  #scores .me-scores {
+    display: none;
+  }
+
+  /* Put the appropriate score immediately to the right of each team. */
+  #scores .me-team[data-score]::after {
+    content: attr(data-score);
+    margin-left: auto;
+    min-width: 3.2rem;
+    text-align: right;
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  /* Winner gets the same accent treatment as the desktop score. */
+  #scores .me-team:first-of-type[data-score]::after {
+    color: var(--accent);
+    text-shadow: 0 0 18px rgba(77,184,240,0.3);
+  }
+
+  #scores .expand-toggle {
+    min-height: 42px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1297,13 +1373,13 @@ const bpos = bdata ? bdata.pos : '';
 
     matchesHtml += '<div class="matchup-expanded">'
       +'<div class="me-header">'
-      +'<div class="me-team">'+teamLogoCell(home)+'<div><div class="me-tname">'+home.name+'</div><div class="me-owner">'+home.owner+'</div></div></div>'
+      +'<div class="me-team" data-score="'+g.homeScore.toFixed(1)+'">'+teamLogoCell(home)+'<div><div class="me-tname">'+home.name+'</div><div class="me-owner">'+home.owner+'</div></div></div>'
       +'<div><div class="me-scores">'
       +'<div class="me-score '+(hw?'win':'lose')+'">'+g.homeScore.toFixed(1)+'</div>'
       +'<div class="me-sep">&ndash;</div>'
       +'<div class="me-score '+(aw?'win':'lose')+'">'+g.awayScore.toFixed(1)+'</div>'
       +'</div></div>'
-      +'<div class="me-team r"><div><div class="me-tname">'+away.name+'</div><div class="me-owner">'+away.owner+'</div></div>'+teamLogoCell(away)+'</div>'
+      +'<div class="me-team r" data-score="'+g.awayScore.toFixed(1)+'">'+teamLogoCell(away)+'<div><div class="me-tname">'+away.name+'</div><div class="me-owner">'+away.owner+'</div></div></div>'
       +'</div>'
       +'<div class="expand-toggle" id="lt'+mid+'" onclick="toggleLineup('+mid+')">'
       +'<span>View Lineups &amp; Player Scores</span><span class="earrow">&#9660;</span></div>'
