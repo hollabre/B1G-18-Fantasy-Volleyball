@@ -387,6 +387,475 @@ table.stbl tbody td.pc { text-align: center; }
   .psd-divider { width: auto; height: 1px; align-self: auto; }
 
 }
+
+
+/* =========================================================
+   PHONE-FIRST OPTIMIZATION
+   Keeps the desktop design intact and adapts the site for
+   narrow phone screens (640px and below).
+   ========================================================= */
+@media (max-width: 640px) {
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    height: 60px;
+    padding: 0 0.75rem;
+  }
+
+  .logo-main {
+    font-size: 1.45rem;
+    letter-spacing: 0.04em;
+  }
+
+  .logo-sub {
+    font-size: 0.42rem;
+    letter-spacing: 0.12em;
+  }
+
+  .header-meta {
+    gap: 0.35rem;
+  }
+
+  .week-label {
+    display: none;
+  }
+
+  .season-badge {
+    font-size: 0.52rem;
+    padding: 0.25rem 0.55rem;
+  }
+
+  /* TOP NAV - swipe left/right */
+  nav.tabs {
+    top: 60px;
+    padding: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  nav.tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  nav.tabs button {
+    flex: 0 0 auto;
+    font-size: 0.54rem;
+    letter-spacing: 0.08em;
+    padding: 0.78rem 0.82rem;
+  }
+
+  /* MAIN CONTENT */
+  main {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0.9rem 0.7rem 3rem;
+  }
+
+  .section.active {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* SECTION HEADERS */
+  .sec-header {
+    margin-bottom: 0.9rem;
+    gap: 0.5rem;
+  }
+
+  .sec-title {
+    font-size: 2rem;
+    line-height: 0.95;
+  }
+
+  .sec-desc {
+    font-size: 0.67rem;
+    line-height: 1.45;
+    max-width: 100%;
+  }
+
+  /* HOME PAGE */
+  #home > div {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #home [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* TEAM CARDS */
+  .teams-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .team-card {
+    width: 100%;
+  }
+
+  .tc-photo {
+    width: 82px;
+    min-width: 82px;
+    height: 82px;
+  }
+
+  .tc-info {
+    padding: 0.65rem 0.7rem;
+  }
+
+  .tc-header {
+    gap: 0.35rem;
+  }
+
+  .tc-name {
+    font-size: 1.02rem;
+  }
+
+  .tc-owner {
+    font-size: 0.56rem;
+  }
+
+  .tc-rank {
+    font-size: 1.65rem;
+  }
+
+  .tc-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.28rem;
+    margin-top: 0.45rem;
+  }
+
+  .stat-box {
+    padding: 0.38rem 0.15rem;
+  }
+
+  .stat-val {
+    font-size: 0.69rem;
+  }
+
+  .stat-lbl {
+    font-size: 0.4rem;
+    letter-spacing: 0.07em;
+  }
+
+  .roster-toggle {
+    min-height: 42px;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.53rem;
+  }
+
+  .rtable {
+    font-size: 0.68rem;
+  }
+
+  .rtable thead th {
+    font-size: 0.46rem;
+    padding: 0.45rem 0.45rem;
+  }
+
+  .rtable td {
+    padding: 0.45rem;
+  }
+
+  /* SCORE / MATCHUP CARDS */
+  .matchups {
+    gap: 0.75rem;
+  }
+
+  .mc {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    padding: 0.85rem;
+  }
+
+  .mt.r {
+    text-align: left;
+  }
+
+  .mtn {
+    font-size: 1.02rem;
+  }
+
+  .mto {
+    font-size: 0.59rem;
+  }
+
+  .msb {
+    gap: 0.5rem;
+  }
+
+  .ms {
+    font-size: 1.4rem;
+    min-width: 2.7rem;
+  }
+
+  /* WEEK NAV */
+  .week-nav {
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .week-nav-label {
+    width: 100%;
+    font-size: 0.57rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .week-nav-btn {
+    min-height: 36px;
+    font-size: 0.52rem;
+    padding: 0.42rem 0.6rem;
+  }
+
+  /* EXPANDED MATCHUPS */
+  .matchup-expanded {
+    margin-bottom: 0.75rem;
+  }
+
+  .me-header {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .me-team,
+  .me-team.r {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .me-tname {
+    font-size: 1.05rem;
+  }
+
+  .me-owner {
+    font-size: 0.57rem;
+  }
+
+  .me-scores {
+    order: -1;
+    gap: 0.55rem;
+  }
+
+  .me-score {
+    font-size: 1.45rem;
+    min-width: 2.6rem;
+  }
+
+  .me-lineups {
+    grid-template-columns: 1fr;
+  }
+
+  .me-lineup {
+    padding: 0.65rem 0.7rem;
+  }
+
+  .me-lineup:first-child {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .me-player-row {
+    min-height: 34px;
+  }
+
+  .me-pname {
+    font-size: 0.7rem;
+  }
+
+  .me-ppts {
+    font-size: 0.7rem;
+  }
+
+  .expand-toggle {
+    min-height: 42px;
+    font-size: 0.53rem;
+  }
+
+  /* STANDINGS / PLAYER TABLES
+     Keep the full table readable and let the user swipe it. */
+  .swrap,
+  .schedule-wrap,
+  .dgwrap,
+  .bracket-outer {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  table.stbl {
+    min-width: 760px;
+    font-size: 0.72rem;
+  }
+
+  table.stbl thead th {
+    font-size: 0.52rem;
+    padding: 0.7rem 0.65rem;
+  }
+
+  table.stbl tbody td {
+    padding: 0.65rem;
+  }
+
+  td.nc {
+    font-size: 0.95rem;
+  }
+
+  td.oc {
+    font-size: 0.64rem;
+  }
+
+  /* PLAYER FILTERS */
+  .ctrl {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    margin-bottom: 1rem;
+  }
+
+  .sbox,
+  .fsel {
+    width: 100%;
+    min-height: 42px;
+    font-size: 0.65rem;
+  }
+
+  /* PLAYER STAT DRAWER */
+  .player-stat-drawer {
+    padding: 0.8rem;
+    gap: 0.7rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .psd-player-info {
+    min-width: 0;
+    gap: 0.7rem;
+  }
+
+  .psd-player-photo {
+    width: 46px;
+    height: 46px;
+  }
+
+  .psd-player-name {
+    font-size: 1rem;
+  }
+
+  .psd-player-meta {
+    font-size: 0.57rem;
+  }
+
+  .psd-divider {
+    width: auto;
+    height: 1px;
+    align-self: auto;
+  }
+
+  .psd-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+  }
+
+  .psd-stat {
+    padding: 0.55rem 0.25rem;
+  }
+
+  .psd-val {
+    font-size: 0.95rem;
+  }
+
+  .psd-lbl {
+    font-size: 0.41rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* DRAFT BOARD */
+  .dgwrap {
+    padding-bottom: 0.25rem;
+  }
+
+  .dg {
+    min-width: 720px;
+  }
+
+  /* PLAYOFFS */
+  .bracket-layout {
+    min-width: 600px;
+    flex-wrap: nowrap;
+  }
+
+  .bracket-col {
+    min-width: 150px;
+  }
+
+  /* B1G SCHEDULE */
+  .schedule-table {
+    min-width: 800px;
+  }
+
+  .sched-legend {
+    gap: 0.65rem 1rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .sched-legend-item {
+    font-size: 0.52rem;
+  }
+
+  /* GENERAL TOUCH TARGETS */
+  button,
+  select,
+  input,
+  .roster-toggle,
+  .expand-toggle {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .logo-main {
+    font-size: 1.28rem;
+  }
+
+  main {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  .sec-title {
+    font-size: 1.8rem;
+  }
+
+  .tc-photo {
+    width: 76px;
+    min-width: 76px;
+    height: 76px;
+  }
+
+  .tc-stats {
+    gap: 0.2rem;
+  }
+
+  .stat-val {
+    font-size: 0.64rem;
+  }
+}
+
 </style>
 </head>
 <body>
