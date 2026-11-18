@@ -5,7 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Big Ten Fantasy Volleyball 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
+/* CHAMPION BANNER */
+.champ-home{position:relative;overflow:hidden;margin-bottom:2rem;padding:2.25rem 1.5rem 2rem;text-align:center;border:2px solid var(--gold);
+  background:radial-gradient(ellipse at 50% 0%,rgba(240,192,64,0.28),transparent 65%),linear-gradient(160deg,#1a1508,var(--surface2));
+  box-shadow:0 0 50px rgba(240,192,64,0.28),inset 0 0 70px rgba(240,192,64,0.07);}
+.champ-home::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,236,160,0.18),transparent);animation:champShine 4s ease-in-out infinite;}
+@keyframes champShine{0%{left:-60%;}60%,100%{left:130%;}}
+.champ-tag{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);position:relative;z-index:2;}
+.champ-photo-wrap{position:relative;z-index:2;display:inline-block;margin:1.4rem 0 1rem;}
+.champ-crown{position:absolute;top:-34px;left:50%;transform:translateX(-50%) rotate(-8deg);font-size:2.6rem;filter:drop-shadow(0 0 12px rgba(240,192,64,0.8));}
+.champ-photo{width:150px;height:150px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  border:5px solid var(--gold);box-shadow:0 0 0 4px rgba(240,192,64,0.25),0 0 40px rgba(240,192,64,0.55);
+  font-family:'Bebas Neue',sans-serif;font-size:3rem;background:var(--surface2);animation:champGlow 2.5s ease-in-out infinite;}
+.champ-photo img{width:100%;height:100%;object-fit:cover;}
+@keyframes champGlow{50%{box-shadow:0 0 0 8px rgba(240,192,64,0.15),0 0 70px rgba(240,192,64,0.85);}}
+.champ-trophy{position:absolute;bottom:-14px;right:-26px;font-size:3.2rem;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.6));animation:champBounce 2s ease-in-out infinite;}
+.champ-trophy.l{right:auto;left:-26px;animation-delay:1s;}
+@keyframes champBounce{50%{transform:translateY(-8px) rotate(6deg);}}
+.champ-title{position:relative;z-index:2;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.7rem,4.5vw,3.2rem);letter-spacing:0.05em;line-height:1.05;
+  background:linear-gradient(135deg,#fff3b0,var(--gold),#e8a317);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;max-width:800px;margin:0 auto;}
+.champ-sub{position:relative;z-index:2;margin-top:0.9rem;font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase;}
+.champ-sub b{color:var(--gold);}
+.champ-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+.champ-confetti i{position:absolute;top:-14px;width:8px;height:14px;opacity:0.9;animation:champFall linear infinite;}
+@keyframes champFall{to{transform:translateY(420px) rotate(720deg);opacity:0;}}
+@media(max-width:640px){
+  .champ-home{padding:1.75rem 0.9rem 1.5rem;}
+  .champ-photo{width:110px;height:110px;font-size:2.2rem;}
+  .champ-trophy{font-size:2.3rem;right:-20px;}.champ-trophy.l{left:-20px;}
+  .champ-tag{font-size:0.58rem;letter-spacing:0.2em;}
+}
+@media(prefers-reduced-motion:reduce){.champ-home *,.champ-home::before{animation:none!important;}}
+  <style>
 :root{
   --bg:#080c12;--surface:#0d1520;--surface2:#131e2e;--border:#1a2d45;
   --accent:#4db8f0;--accent2:#2de6b8;--accent3:#f04f3a;
@@ -1895,7 +1927,31 @@ Thanks all!
   //   blurb: `BLURB `
   // },
 ];
-
+function championBanner() {
+  const t = TEAMS.find(x => x.name === 'Chat B1G');
+  const photo = t && t.photo
+    ? '<img src="' + t.photo + '" alt="Chat B1G">'
+    : '<span style="color:var(--gold)">CB</span>';
+  const colors = ['#f0c040','#4db8f0','#2de6b8','#f04f3a','#ffffff'];
+  let confetti = '';
+  for (let i = 0; i < 40; i++) {
+    confetti += '<i style="left:' + (i * 2.5 + (i % 3)) + '%;background:' + colors[i % 5]
+      + ';animation-duration:' + (3 + (i % 5) * 0.8) + 's;animation-delay:-' + ((i * 0.37) % 4).toFixed(2)
+      + 's;transform:rotate(' + (i * 37) + 'deg)"></i>';
+  }
+  return '<div class="champ-home">'
+    + '<div class="champ-confetti">' + confetti + '</div>'
+    + '<div class="champ-tag">&#11088; 2026 Champions &#11088;</div>'
+    + '<div class="champ-photo-wrap">'
+    +   '<div class="champ-crown">&#128081;</div>'
+    +   '<div class="champ-photo">' + photo + '</div>'
+    +   '<div class="champ-trophy l">&#127942;</div>'
+    +   '<div class="champ-trophy">&#127942;</div>'
+    + '</div>'
+    + '<div class="champ-title">Congratulations to Chat B1G on winning the 2026 Big 18 Fantasy Volleyball League!</div>'
+    + '<div class="champ-sub">Championship final &middot; <b>1,670</b> &ndash; 1,347 &middot; First title in franchise history</div>'
+    + '</div>';
+}
 function renderHome() {
   const latestReview = WEEK_REVIEWS[WEEK_REVIEWS.length - 1] || null;
 
@@ -1920,7 +1976,7 @@ function renderHome() {
   const standingsData = [...TEAMS]
   .sort((a, b) => b.wins - a.wins || b.pf - a.pf);
 
-  let html = '<div style="max-width:900px;margin:0 auto">';
+  let html = championBanner() + '<div style="max-width:900px;margin:0 auto">';
 
 // ── WEEK IN REVIEW ───────────────────────────────────────────
 if (latestReview) {
